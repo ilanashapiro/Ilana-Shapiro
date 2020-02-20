@@ -29,10 +29,10 @@ class LoginViewController: UIViewController {
             guard let linkParameter = components.url else { return }
             print("The link parameter is: \(linkParameter)")
             
-            actionCodeSettings.url = linkParameter
+            actionCodeSettings.url = URL(string: "https://safewalk.page.link/?link=https://safewalk.com/signup") //linkParameter
                 //URL(string: String(format: "https://www.safewalk.page.link"))// /?email=%@", email))
             // The sign-in operation has to always be completed in the app.
-            actionCodeSettings.handleCodeInApp = true
+            actionCodeSettings.handleCodeInApp = true 
             actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier!)
             actionCodeSettings.setAndroidPackageName("com.safewalk.android",
                                                      installIfNotAvailable: false,

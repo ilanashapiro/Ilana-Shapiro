@@ -73,5 +73,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+    <key>FirebaseDynamicLinksCustomDomains</key>
+    <array>
+      <string>safewalk.page.link</string>
+    </array>
 </dict>
 </plist>
