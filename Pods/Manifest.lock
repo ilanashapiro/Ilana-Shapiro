@@ -366,6 +366,7 @@ PODS:
 DEPENDENCIES:
   - Firebase/Analytics
   - Firebase/Auth
+  - Firebase/Core
   - Firebase/Firestore
   - FirebaseUI
   - GoogleMaps
@@ -439,6 +440,6 @@ SPEC CHECKSUMS:
   PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
   SDWebImage: 4d5c027c935438f341ed33dbac53ff9f479922ca
 
-PODFILE CHECKSUM: 1a226d39984b6cf5a5fb4cb4a51017200ec2178f
+PODFILE CHECKSUM: 704b042aee41aa53e917a410dc3b8981e33ff575
 
 COCOAPODS: 1.8.4
