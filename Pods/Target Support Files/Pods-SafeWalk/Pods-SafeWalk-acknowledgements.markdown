@@ -3812,6 +3812,10 @@ Copyright 2020 Google
 
 Copyright 2019 Google
 
+## GooglePlaces
+
+Copyright 2019 Google
+
 ## GoogleSignIn
 
 Copyright 2019 Google

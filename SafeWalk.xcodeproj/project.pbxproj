@@ -15,6 +15,7 @@
 		47A2B31423FE0FD8009A4443 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2B31323FE0FD8009A4443 /* LoginViewController.swift */; };
 		47A2B33823FE6104009A4443 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A2B33723FE6104009A4443 /* Main.storyboard */; };
 		47A2B35A23FE6333009A4443 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2B35923FE6333009A4443 /* SceneDelegate.swift */; };
+		5CA6BBA7240204D700225256 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA6BBA6240204D700225256 /* MapViewController.swift */; };
 		AADAD4D29C80954082F6E857 /* Pods_SafeWalk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC10C9AFF2F33321CBF80540 /* Pods_SafeWalk.framework */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		47A2B33723FE6104009A4443 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		47A2B35923FE6333009A4443 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		47A2B35B23FE70C9009A4443 /* SafeWalk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SafeWalk.entitlements; sourceTree = "<group>"; };
+		5CA6BBA6240204D700225256 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		655B0A48535E619C44492A83 /* Pods-SafeWalk.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafeWalk.release.xcconfig"; path = "Target Support Files/Pods-SafeWalk/Pods-SafeWalk.release.xcconfig"; sourceTree = "<group>"; };
 		CC10C9AFF2F33321CBF80540 /* Pods_SafeWalk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SafeWalk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -81,6 +83,7 @@
 				47A2B2FB23F94AD1009A4443 /* AppDelegate.swift */,
 				47A2B35923FE6333009A4443 /* SceneDelegate.swift */,
 				47A2B31323FE0FD8009A4443 /* LoginViewController.swift */,
+				5CA6BBA6240204D700225256 /* MapViewController.swift */,
 				47A2B33723FE6104009A4443 /* Main.storyboard */,
 				47A2B30623F94AD2009A4443 /* LaunchScreen.storyboard */,
 				47A2B30123F94AD2009A4443 /* Assets.xcassets */,
@@ -245,6 +248,7 @@
 				47A2B31423FE0FD8009A4443 /* LoginViewController.swift in Sources */,
 				47A2B2FC23F94AD1009A4443 /* AppDelegate.swift in Sources */,
 				47A2B35A23FE6333009A4443 /* SceneDelegate.swift in Sources */,
+				5CA6BBA7240204D700225256 /* MapViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
