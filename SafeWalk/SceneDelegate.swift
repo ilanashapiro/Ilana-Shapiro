@@ -18,38 +18,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let windowScene = (scene as? UIWindowScene) else { return }
-        
-        let authUI = FUIAuth.defaultAuthUI()
-        // You need to adopt a FUIAuthDelegate protocol to receive callback
-        authUI?.delegate = self
-
-                
-                
-        let providers: [FUIAuthProvider] = [
-          FUIEmailAuth(),
-        ]
-        authUI?.providers = providers
-                
-        self.window = UIWindow(frame: UIScreen.main.bounds)
-        //                   let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-                           // Present the auth view controller and then implement the sign in callback.
-                
-        let authViewController = authUI!.authViewController()
-        //                authViewController.set
-        //                mainStoryboard.instantiateViewController(identifier:)
-        window?.windowScene = windowScene
-       window?.rootViewController = authViewController
-
-       window?.makeKeyAndVisible()
-                
-                           
-                
-//                        let window = UIWindow(frame: UIScreen.main.bounds)
-//                        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-//
-//                        window.rootViewController = authViewController
-//                        window.makeKeyAndVisible()
+        if (Auth.auth().currentUser != nil) {
+            if let windowScene = scene as? UIWindowScene {
+                let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+                self.window = UIWindow(windowScene: windowScene)
+                let initialViewController =
+                    mainStoryboard.instantiateViewController(withIdentifier: "MapViewController")
+                    self.window!.rootViewController = initialViewController
+                    self.window!.makeKeyAndVisible()
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
