@@ -46,23 +46,25 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="d8m-Ch-id9"/>
                     </view>
+                    <toolbarItems/>
                     <navigationItem key="navigationItem" id="7Yo-xr-n19"/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="emailTextField" destination="s6O-H0-k7r" id="Hdk-sb-I4C"/>
                         <outlet property="passwordTextField" destination="1ti-jQ-JGU" id="Y6N-RO-1wC"/>
-                        <segue destination="l2D-4s-Yp9" kind="show" identifier="mapSegue" id="Dkt-YP-UEK"/>
+                        <segue destination="l2D-4s-Yp9" kind="show" identifier="mapSegue" id="50O-Rh-CAA"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mu5-zb-59T" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-30.434782608695656" y="843.75"/>
+            <point key="canvasLocation" x="908" y="843.32833583208401"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="dUh-gh-eKz">
             <objects>
-                <viewController id="piu-wM-JhH" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="WelcomeViewController" id="piu-wM-JhH" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3sc-5y-A09">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Welcome to SafeWalk!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1p9-si-vr2">
@@ -78,7 +80,7 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="32"/>
                                 <state key="normal" title="Log In"/>
                                 <connections>
-                                    <segue destination="CtX-VA-ft1" kind="show" id="uet-7b-bsg"/>
+                                    <segue destination="CtX-VA-ft1" kind="show" id="aXd-Gn-T5l"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eVK-K9-RbB">
@@ -87,13 +89,14 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="32"/>
                                 <state key="normal" title="Sign Up"/>
                                 <connections>
-                                    <segue destination="D96-HT-EJW" kind="show" id="IUq-Q0-ejt"/>
+                                    <segue destination="D96-HT-EJW" kind="show" id="E5B-4f-Ozu"/>
                                 </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="GiW-xN-ubM"/>
                     </view>
+                    <navigationItem key="navigationItem" id="Qjx-RE-JFu"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NEt-Ri-qpP" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -102,7 +105,7 @@
         <!--Sign Up View Controller-->
         <scene sceneID="HME-GV-vEF">
             <objects>
-                <viewController id="D96-HT-EJW" customClass="SignUpViewController" customModule="SafeWalk" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="loginSegue" id="D96-HT-EJW" customClass="SignUpViewController" customModule="SafeWalk" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="CyY-8n-dZl">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -120,15 +123,6 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8iC-Ue-oXv">
-                                <rect key="frame" x="61" y="580" width="293" height="67"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="28"/>
-                                <state key="normal" title="Skip Authentication"/>
-                                <connections>
-                                    <segue destination="l2D-4s-Yp9" kind="show" id="SVT-We-3Sp"/>
-                                </connections>
-                            </button>
                             <textField opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter password here" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="x7q-cT-jrh">
                                 <rect key="frame" x="20" y="361" width="374" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -148,16 +142,16 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="r2m-o6-ef6"/>
                     </view>
-                    <navigationItem key="navigationItem" id="tGo-uE-Ik0"/>
+                    <navigationItem key="navigationItem" id="jFg-NR-nUD"/>
                     <connections>
                         <outlet property="emailTextField" destination="zoc-UW-i07" id="acs-wF-B0i"/>
                         <outlet property="passwordTextField" destination="x7q-cT-jrh" id="z7f-Uf-Lg3"/>
-                        <segue destination="CtX-VA-ft1" kind="show" identifier="loginSegue" id="haK-iO-9OM"/>
+                        <segue destination="CtX-VA-ft1" kind="show" id="buC-OI-UM0"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3GH-YD-DrR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-30.434782608695656" y="120.53571428571428"/>
+            <point key="canvasLocation" x="1817.3913043478262" y="119.86607142857142"/>
         </scene>
         <!--Map View Controller-->
         <scene sceneID="W2o-wI-m8v">
@@ -168,37 +162,31 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Google Maps Page Here!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LXb-in-QZ4">
-                                <rect key="frame" x="90" y="40" width="234" height="21"/>
+                                <rect key="frame" x="81" y="61" width="234" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0xZ-kx-Dwi">
-                                <rect key="frame" x="45" y="758" width="325" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Back to Sign Up Page"/>
-                                <connections>
-                                    <segue destination="D96-HT-EJW" kind="show" id="yo4-wH-2FS"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="ax1-Ig-gqs"/>
                     </view>
+                    <toolbarItems>
+                        <barButtonItem title="Logout" id="nnx-kh-r7T"/>
+                    </toolbarItems>
                     <navigationItem key="navigationItem" id="WG0-Xq-bzr"/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
-                        <outlet property="helloLabel" destination="LXb-in-QZ4" id="eFJ-FP-udP"/>
+                        <segue destination="piu-wM-JhH" kind="show" identifier="welcomeSegue" id="Dnh-KM-ihf"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nWq-AA-bZB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="704.34782608695662" y="122.54464285714285"/>
+            <point key="canvasLocation" x="386" y="-434"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="SVT-We-3Sp"/>
-        <segue reference="yo4-wH-2FS"/>
-        <segue reference="uet-7b-bsg"/>
+        <segue reference="aXd-Gn-T5l"/>
     </inferredMetricsTieBreakers>
 </document>
