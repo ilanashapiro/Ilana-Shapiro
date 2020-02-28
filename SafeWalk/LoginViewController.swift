@@ -27,7 +27,12 @@ class LoginViewController: UIViewController {
                 alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
                 strongSelf.present(alert, animated: true)
             } else {
-                strongSelf.performSegue(withIdentifier: "mapSegue", sender: self)
+                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+                let mapViewController = storyBoard.instantiateViewController(withIdentifier: "MapNavigationController")
+                let window = strongSelf.view.window
+                window?.rootViewController = mapViewController
+                strongSelf.navigationController?.popToRootViewController(animated: true)
+                //strongSelf.performSegue(withIdentifier: "mapSegue", sender: self)
             }
             }
         }

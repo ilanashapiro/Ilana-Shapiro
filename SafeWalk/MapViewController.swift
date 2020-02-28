@@ -11,12 +11,8 @@ import GoogleMaps
 import Firebase
 
 class MapViewController: UIViewController {
-    //@IBOutlet weak var helloLabel: UILabel!
-  
     override func viewDidLoad() {
         super.viewDidLoad()
-        //helloLabel.textColor = UIColor.red
-
         // Do any additional setup after loading the view.
     }
     
@@ -44,6 +40,10 @@ class MapViewController: UIViewController {
             print ("Error signing out: %@", signOutError)
         }
     }
+    
+    @objc func profileButtonTapped() {
+        performSegue(withIdentifier: "profileSegue", sender: self)
+    }
   
     // custom loading of the view to display Google Maps
     override func loadView() {
@@ -52,11 +52,24 @@ class MapViewController: UIViewController {
         //     Create a GMSCameraPosition that tells the map to display the
         //     coordinate -33.86,151.20 at zoom level 6.
         let camera = GMSCameraPosition.camera(withLatitude: 34.1, longitude: -117.7, zoom: 8.0)
-        let mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
-        view = mapView
-        
+//        let mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
+//        view = mapView
+//
+//        let logoutButton = UIBarButtonItem(title: "Logout", style: UIBarButtonItem.Style.plain, target: self, action: #selector(logout))
+//        self.navigationItem.leftBarButtonItem = logoutButton
+
+        let f = self.view.frame
+        let mapFrame = CGRect(x: f.origin.x, y: 0, width: f.size.width, height: f.size.height)
+        let mapView = GMSMapView.map(withFrame: mapFrame, camera: camera)
+
+
+        self.view.addSubview(mapView)
+//        view = mapView
+
         let logoutButton = UIBarButtonItem(title: "Logout", style: UIBarButtonItem.Style.plain, target: self, action: #selector(logout))
+        let profileButton = UIBarButtonItem(title: "Go to Profile", style: UIBarButtonItem.Style.plain, target: self, action:#selector(profileButtonTapped))
         self.navigationItem.leftBarButtonItem = logoutButton
+        self.navigationItem.rightBarButtonItem = profileButton
 
         // Creates a marker in the center of the map.
         let marker = GMSMarker()

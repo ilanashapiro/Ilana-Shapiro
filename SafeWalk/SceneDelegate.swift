@@ -23,7 +23,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 let mainStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
                 self.window = UIWindow(windowScene: windowScene)
                 let initialViewController =
-                    mainStoryboard.instantiateViewController(withIdentifier: "MapViewController")
+                    mainStoryboard.instantiateViewController(withIdentifier: "MapNavigationController")
                     self.window!.rootViewController = initialViewController
                     self.window!.makeKeyAndVisible()
             }
