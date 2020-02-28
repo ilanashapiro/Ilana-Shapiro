@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="piu-wM-JhH">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ZGf-uB-UWq">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
@@ -12,7 +12,7 @@
             <objects>
                 <viewController id="CtX-VA-ft1" customClass="LoginViewController" customModule="SafeWalk" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ocT-04-4MM">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Log In" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nFo-XX-mzJ">
@@ -57,14 +57,14 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mu5-zb-59T" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="908" y="843.32833583208401"/>
+            <point key="canvasLocation" x="1817.3913043478262" y="843.08035714285711"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="dUh-gh-eKz">
             <objects>
                 <viewController storyboardIdentifier="WelcomeViewController" id="piu-wM-JhH" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3sc-5y-A09">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Welcome to SafeWalk!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1p9-si-vr2">
@@ -100,14 +100,14 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NEt-Ri-qpP" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-910" y="394"/>
+            <point key="canvasLocation" x="0.0" y="393.75"/>
         </scene>
         <!--Sign Up View Controller-->
         <scene sceneID="HME-GV-vEF">
             <objects>
                 <viewController storyboardIdentifier="loginSegue" id="D96-HT-EJW" customClass="SignUpViewController" customModule="SafeWalk" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="CyY-8n-dZl">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <textField opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter email here" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="zoc-UW-i07">
@@ -151,14 +151,14 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3GH-YD-DrR" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1817.3913043478262" y="119.86607142857142"/>
+            <point key="canvasLocation" x="2727.536231884058" y="119.86607142857142"/>
         </scene>
         <!--Map View Controller-->
         <scene sceneID="W2o-wI-m8v">
             <objects>
                 <viewController storyboardIdentifier="MapViewController" id="l2D-4s-Yp9" customClass="MapViewController" customModule="SafeWalk" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="0ud-li-8C6">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Google Maps Page Here!" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LXb-in-QZ4">
@@ -178,12 +178,31 @@
                     <navigationItem key="navigationItem" id="WG0-Xq-bzr"/>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
-                        <segue destination="piu-wM-JhH" kind="show" identifier="welcomeSegue" id="Dnh-KM-ihf"/>
+                        <segue destination="ZGf-uB-UWq" kind="show" identifier="welcomeSegue" id="Dnh-KM-ihf"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="nWq-AA-bZB" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="386" y="-434"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="Vno-z5-rUk">
+            <objects>
+                <navigationController storyboardIdentifier="welcomeNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="ZGf-uB-UWq" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationItem key="navigationItem" id="M3u-m6-u1J"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="J0O-Zh-4oc">
+                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="piu-wM-JhH" kind="relationship" relationship="rootViewController" id="OXk-iG-pVh"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="yWC-s8-AWs" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-910.14492753623199" y="393.75"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

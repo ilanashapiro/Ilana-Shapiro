@@ -36,7 +36,7 @@ class MapViewController: UIViewController {
         do {
             try Auth.auth().signOut()
             let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-            let welcomeViewController = storyBoard.instantiateViewController(withIdentifier: "WelcomeViewController")
+            let welcomeViewController = storyBoard.instantiateViewController(withIdentifier: "welcomeNavigationController")
             let window = self.view.window
             window?.rootViewController = welcomeViewController
             self.navigationController?.popToRootViewController(animated: true)
