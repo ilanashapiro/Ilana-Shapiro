@@ -51,6 +51,12 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.googleMaps.settings.myLocationButton = true
         self.googleMaps.settings.compassButton = true
         self.googleMaps.settings.zoomGestures = true
+        
+        startLocation.text = "Start Location"
+        startLocation.textColor = UIColor.lightGray
+        
+        destinationLocation.text = "Destination Location"
+        destinationLocation.textColor = UIColor.lightGray
     }
     
     // a function that can create markers on the map
@@ -105,7 +111,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     // add func drawPath() here !!
     
     // when start location is tapped, open search location
-    @IBAction func openStartLocation(_ sender: UIButton) {
+    @IBAction func openStartLocation(_ sender: UITextField) {
         let autoCompleteController = GMSAutocompleteViewController()
         autoCompleteController.delegate = self
         
@@ -120,8 +126,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
     }
     
+    
     // when destination location is tapped, open search location
-    @IBAction func openDestinationLocation(_ sender: UIButton) {
+    @IBAction func openDestinationLocation(_ sender: UITextField) {
         let autoCompleteController = GMSAutocompleteViewController()
         autoCompleteController.delegate = self
         
@@ -133,7 +140,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         self.locationManager.stopUpdatingLocation()
         self.present(autoCompleteController, animated: true, completion: nil)
-        
     }
     
     
