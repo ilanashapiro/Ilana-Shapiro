@@ -82,5 +82,13 @@
 		<string>googlechromes</string>
 		<string>comgooglemaps</string>
 	</array>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Need to access your location</string>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
 </dict>
 </plist>
