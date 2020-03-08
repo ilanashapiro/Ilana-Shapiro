@@ -52,10 +52,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.googleMaps.settings.compassButton = true
         self.googleMaps.settings.zoomGestures = true
         
-        startLocation.text = "Start Location"
+        startLocation.placeholder = "Start Location"
         startLocation.textColor = UIColor.lightGray
         
-        destinationLocation.text = "Destination Location"
+        destinationLocation.placeholder = "Destination Location"
         destinationLocation.textColor = UIColor.lightGray
     }
     
