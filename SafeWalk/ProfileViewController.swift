@@ -10,20 +10,19 @@ import UIKit
 import Firebase
 
 class ProfileViewController: UIViewController, EmergencyContactViewControllerDelegate {
-    func updateEmergencyContact(name: String!, number: String!) {
-        updateEmergencyContactUI()
+    
+    func updateEmergencyContact(_ controller: EmergencyContactViewController, name: String!, number: String!) {
+        self.emergencyContactNameLabel.text = name
+        self.emergencyContactNumberLabel.text = formatPhoneNumber(number: number)
+        
+        controller.navigationController?.popViewController(animated: true)
     }
     
     var db:Firestore!
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var emailLabel: UILabel!
-    @IBOutlet weak var emergencyContactLabel: UILabel!
-    @IBAction func didTapChangeEmergencyContact(_ sender: Any) {
-        
-
-    }
-    @IBAction func didTapChangePassword(_ sender: Any) {
-    }
+    @IBOutlet weak var emergencyContactNameLabel: UILabel!
+    @IBOutlet weak var emergencyContactNumberLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,9 +37,10 @@ class ProfileViewController: UIViewController, EmergencyContactViewControllerDel
         let emergencyContactRef = db.collection("users").document(Auth.auth().currentUser!.uid)
         emergencyContactRef.getDocument { (document, error) in
             if let document = document, document.exists {
-                let dataDescription = document.data().map(String.init(describing:)) ?? "nil"
-                print("Document data: \(dataDescription)")
-                self.emergencyContactLabel.text = dataDescription
+                self.emergencyContactNameLabel.text = document.get("name") as? String
+                let number = (document.get("number") as? String)
+                guard number != nil else { return }
+                self.emergencyContactNumberLabel.text = self.formatPhoneNumber(number: number)
             } else {
                 print("Document does not exist")
             }
@@ -49,11 +49,20 @@ class ProfileViewController: UIViewController, EmergencyContactViewControllerDel
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "segueToEmergencyContact") {
-           if let nav = segue.destination as? UINavigationController, let emergencyContactVC = nav.topViewController as? EmergencyContactViewController {
-           emergencyContactVC.delegate = self
-           }
+            let emergencyContactVC = segue.destination as! EmergencyContactViewController
+            emergencyContactVC.delegate = self
         }
-       }
+    }
+    
+    func formatPhoneNumber(number: String!) -> String {
+        if number.count != 10 || !number.isNumeric {
+            return "INPUT ERROR"
+        }
+        let areaCode = "(" + number[number!.index(number!.startIndex, offsetBy: 0)..<number!.index(number!.startIndex, offsetBy: 3)] + ") "
+        let firstThreeDigits = number[number!.index(number!.startIndex, offsetBy: 3)..<number!.index(number!.startIndex, offsetBy: 6)] + "-"
+        let lastFourDigits = number[number!.index(number!.endIndex, offsetBy: -4)..<number!.index(number!.endIndex, offsetBy: 0)]
+        return areaCode + firstThreeDigits + lastFourDigits
+    }
 
     /*
     // MARK: - Navigation

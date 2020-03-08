@@ -10,7 +10,7 @@ import UIKit
 import Firebase
 
 protocol EmergencyContactViewControllerDelegate: class {
-    func updateEmergencyContact(name: String!, number: String!)
+    func updateEmergencyContact(_ controller: EmergencyContactViewController, name: String!, number: String!)
 }
 class EmergencyContactViewController: UIViewController {
     var db:Firestore!
@@ -24,7 +24,8 @@ class EmergencyContactViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
             self.present(alert, animated: true)
             return
-        } else if (emergencyContactNumberTextField.text!.isNumeric) {
+        }
+        else if emergencyContactNumberTextField.text!.count != 10 || !emergencyContactNumberTextField.text!.isNumeric {
             let alert = UIAlertController(title: "Error!", message: "Enter the number in the format 0000000000 (note that the country code defaults to 1 as only US-based calling is currently supported)", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
             self.present(alert, animated: true)
@@ -40,7 +41,7 @@ class EmergencyContactViewController: UIViewController {
         ]
         
         updateEmergencyContactData(data: emergencyContactData)
-        delegate?.updateEmergencyContact(name: name, number: number)
+        delegate?.updateEmergencyContact(self, name: name, number: number)
     }
     
     override func viewDidLoad() {
@@ -72,6 +73,7 @@ class EmergencyContactViewController: UIViewController {
     }
     */
 }
+
 extension String {
     var isNumeric: Bool {
         guard self.count > 0 else { return false }

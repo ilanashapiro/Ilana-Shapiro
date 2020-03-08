@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ZGf-uB-UWq">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ZGf-uB-UWq">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -256,8 +256,15 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Emergency Contact Name: Number" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2oU-K3-dUN">
-                                <rect key="frame" x="30" y="304" width="364" height="21"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Emergency Contact" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2oU-K3-dUN">
+                                <rect key="frame" x="30" y="304" width="161" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="aYF-lh-t85">
+                                <rect key="frame" x="71" y="333" width="323" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
@@ -268,7 +275,6 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Change Emergency Contact"/>
                                 <connections>
-                                    <action selector="didTapChangeEmergencyContact:" destination="eqP-s3-mgC" eventType="touchUpInside" id="pya-RD-afJ"/>
                                     <segue destination="gdS-bs-1DQ" kind="show" identifier="segueToEmergencyContact" id="vKE-Dh-WmD"/>
                                 </connections>
                             </button>
@@ -276,10 +282,14 @@
                                 <rect key="frame" x="136" y="525" width="123" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Change Password"/>
-                                <connections>
-                                    <action selector="didTapChangePassword:" destination="eqP-s3-mgC" eventType="touchUpInside" id="Lx8-ax-3UE"/>
-                                </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Number" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fzm-16-RiV">
+                                <rect key="frame" x="71" y="362" width="323" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="UAc-xO-Ctc"/>
@@ -287,13 +297,14 @@
                     <navigationItem key="navigationItem" id="JsO-NE-K0W"/>
                     <connections>
                         <outlet property="emailLabel" destination="msN-sm-TVA" id="ozX-ik-d5N"/>
-                        <outlet property="emergencyContactLabel" destination="2oU-K3-dUN" id="7cw-3l-piO"/>
+                        <outlet property="emergencyContactNameLabel" destination="aYF-lh-t85" id="qBv-x6-QQs"/>
+                        <outlet property="emergencyContactNumberLabel" destination="Fzm-16-RiV" id="YCZ-l7-d64"/>
                         <outlet property="nameLabel" destination="8nR-sp-BuB" id="ZPk-LI-dbI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qbb-ep-i0m" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2500" y="-349.55357142857139"/>
+            <point key="canvasLocation" x="2498.5507246376815" y="-349.55357142857139"/>
         </scene>
         <!--Emergency Contact View Controller-->
         <scene sceneID="Wzh-Vm-CMz">
