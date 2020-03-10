@@ -22,4 +22,5 @@ target 'SafeWalk' do
   # add pods for Google Maps API
   pod 'GoogleMaps'
   pod 'GooglePlaces'
+  pod 'Alamofire'
 end
