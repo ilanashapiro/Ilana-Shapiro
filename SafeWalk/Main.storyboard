@@ -200,6 +200,9 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <state key="normal" title="Get Path"/>
+                                <connections>
+                                    <segue destination="EHD-UY-q5t" kind="show" id="v8Z-6e-oqc"/>
+                                </connections>
                             </button>
                             <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="78w-el-5kH" userLabel="Google Maps" customClass="GMSMapView">
                                 <rect key="frame" x="0.0" y="14" width="414" height="636"/>
@@ -224,7 +227,7 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="destinationLocation" destination="l85-08-JDz" id="Ojs-zA-Nte"/>
-                        <outlet property="googleMaps" destination="78w-el-5kH" id="f8C-xt-CNa"/>
+                        <outlet property="googleMaps" destination="78w-el-5kH" id="hcq-m5-LT7"/>
                         <outlet property="startLocation" destination="w1V-Fw-3ft" id="phD-qO-0rU"/>
                         <segue destination="ZGf-uB-UWq" kind="show" identifier="welcomeSegue" id="Dnh-KM-ihf"/>
                         <segue destination="eqP-s3-mgC" kind="show" identifier="profileSegue" id="txd-Qm-kNl"/>
@@ -392,6 +395,31 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tze-Cl-xSF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="385.50724637681162" y="-434.59821428571428"/>
+        </scene>
+        <!--Directions View Controller-->
+        <scene sceneID="GWa-6h-AEX">
+            <objects>
+                <viewController id="EHD-UY-q5t" customClass="DirectionsViewController" customModule="SafeWalk" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="fU3-ng-0SL">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Directions View" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="S2k-Sb-F1F">
+                                <rect key="frame" x="99" y="274" width="260" height="53"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="31"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="paf-2b-KEP"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Aek-i4-4h6"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="feG-wy-xLH" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1737.68115942029" y="-1109.5982142857142"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

@@ -57,6 +57,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         destinationLocation.placeholder = "Destination Location"
         destinationLocation.textColor = UIColor.lightGray
+        
     }
     
     // a function that can create markers on the map
@@ -81,23 +82,25 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
 //
 //    }
     
+    // the following functions essentially allow map functionality
+    // if you click a point on the map, these functions store the coordinates of that point
     func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
         googleMaps.isMyLocationEnabled = true
     }
-    
+
     func mapView(_ mapView: GMSMapView, willMove gesture: Bool) {
         googleMaps.isMyLocationEnabled = true
-        
+
         if (gesture) {
             mapView.selectedMarker = nil
         }
     }
-    
+
     func mapView(_ mapView: GMSMapView, didTap marker: GMSMarker) -> Bool {
         googleMaps.isMyLocationEnabled = true
         return false
     }
-    
+
     func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D) {
         print("Coordinate \(coordinate)")
     }
@@ -164,37 +167,14 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     // custom loading of the view to display Google Maps
     override func loadView() {
         super.loadView()
+        
+        definesPresentationContext = true
 
-    // -----------------------OLD/DON'T NEED-------------------------------
-//        // create a GMSCameraPosition that tells the map to display the coordinate location of Claremont, CA
-//        let camera = GMSCameraPosition.camera(withLatitude: 34.1, longitude: -117.7, zoom: 12.0)
-//
-//        // put the map inside the proper view controller structure
-//        let f = self.view.frame
-//        let mapFrame = CGRect(x: f.origin.x, y: 0, width: f.size.width, height: f.size.height)
-//        let mapView = GMSMapView.map(withFrame: mapFrame, camera: camera)
-//
-//        self.view.addSubview(mapView)
-//
-    // -----------------------OLD/DON'T NEED-------------------------------
-
-//        // navigation buttons on the map view controller
+        // navigation buttons on the map view controller
         let logoutButton = UIBarButtonItem(title: "Logout", style: UIBarButtonItem.Style.plain, target: self, action: #selector(logout))
         let profileButton = UIBarButtonItem(title: "Go to Profile", style: UIBarButtonItem.Style.plain, target: self, action:#selector(profileButtonTapped))
         self.navigationItem.leftBarButtonItem = logoutButton
         self.navigationItem.rightBarButtonItem = profileButton
-//
-//        // creates a marker in the center of the map in Claremont, CA
-//        // Default position if user doesn't allow location
-//        let marker = GMSMarker()
-//        marker.position = CLLocationCoordinate2D(latitude: 34.1, longitude: -117.7)
-//        marker.title = "Claremont"
-//        marker.snippet = "California"
-//        marker.map = mapView
-//
-//
-//
-//
     }
 
 }
@@ -224,13 +204,13 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         self.dismiss(animated: true, completion: nil)
     }
     
-    func wasCancelled(_ viewController: GMSAutocompleteViewController) {
+    func wasCancelled(_ mapViewController: GMSAutocompleteViewController) {
         self.dismiss(animated: true, completion: nil)
     }
     
 }
 
-public extension UISearchBar {
+extension UISearchBar {
     func setTextColor(color: UIColor) {
         let svs = subviews.flatMap { $0.subviews }
         guard let tf = (svs.filter { $0 is UITextField }).first as? UITextField else { return }
