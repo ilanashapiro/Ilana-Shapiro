@@ -11,14 +11,9 @@ import GoogleMaps
 import GooglePlaces
 import Firebase
 
-class DirectionsViewController: UIViewController, GMSMapViewDelegate, CLLocationManagerDelegate {
+class DirectionsViewController: UIViewController {
     
     // goes back to choose path maps page
-    
-    
-    
-//    @IBOutlet weak var backButtonTapped: UINavigationItem!
-    
     
     @objc func backButtonTapped() {
         performSegue(withIdentifier: "backSegue", sender: self)
@@ -41,5 +36,12 @@ class DirectionsViewController: UIViewController, GMSMapViewDelegate, CLLocation
 //        self.navigationItem.leftBarButtonItem = backButton
         self.navigationItem.rightBarButtonItem = profileButton
     }
+    
+    
+    @IBAction func call911(_ sender: Any) {
+        let url: NSURL = URL(string: "TEL://911")! as NSURL
+        UIApplication.shared.open(url as URL, options: [:], completionHandler: nil)
+    }
+    
 }
 
