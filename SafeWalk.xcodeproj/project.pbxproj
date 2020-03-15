@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		47918FB12414B4AA00858E60 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 47918FB02414B4A900858E60 /* GoogleService-Info.plist */; };
+		47918FB3241DA2DF00858E60 /* PasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47918FB2241DA2DF00858E60 /* PasswordViewController.swift */; };
 		47A2B2FC23F94AD1009A4443 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2B2FB23F94AD1009A4443 /* AppDelegate.swift */; };
 		47A2B30223F94AD2009A4443 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 47A2B30123F94AD2009A4443 /* Assets.xcassets */; };
 		47A2B30523F94AD2009A4443 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 47A2B30423F94AD2009A4443 /* Preview Assets.xcassets */; };
@@ -27,6 +28,7 @@
 /* Begin PBXFileReference section */
 		16AF77EB2B67985FA49AA981 /* Pods-SafeWalk.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafeWalk.debug.xcconfig"; path = "Target Support Files/Pods-SafeWalk/Pods-SafeWalk.debug.xcconfig"; sourceTree = "<group>"; };
 		47918FB02414B4A900858E60 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		47918FB2241DA2DF00858E60 /* PasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordViewController.swift; sourceTree = "<group>"; };
 		47A2B2F823F94AD1009A4443 /* SafeWalk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SafeWalk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		47A2B2FB23F94AD1009A4443 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		47A2B30123F94AD2009A4443 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -100,6 +102,7 @@
 				5CA6BBA6240204D700225256 /* MapViewController.swift */,
 				5CD8EA0C2418115500961EBC /* DirectionsViewController.swift */,
 				47A2B33723FE6104009A4443 /* Main.storyboard */,
+				47918FB2241DA2DF00858E60 /* PasswordViewController.swift */,
 				47A2B30623F94AD2009A4443 /* LaunchScreen.storyboard */,
 				47A2B30123F94AD2009A4443 /* Assets.xcassets */,
 				47A2B30923F94AD2009A4443 /* Info.plist */,
@@ -261,6 +264,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				47A2B2FC23F94AD1009A4443 /* AppDelegate.swift in Sources */,
+				47918FB3241DA2DF00858E60 /* PasswordViewController.swift in Sources */,
 				47FB8EBE240A644500D34E54 /* EmergencyContactViewController.swift in Sources */,
 				47A2B35A23FE6333009A4443 /* SceneDelegate.swift in Sources */,
 				47FB8EB2240677A500D34E54 /* LoginViewController.swift in Sources */,

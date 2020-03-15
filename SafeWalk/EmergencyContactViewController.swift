@@ -18,13 +18,19 @@ class EmergencyContactViewController: UIViewController {
     
     @IBOutlet weak var emergencyContactNameTextField: UITextField!
     @IBOutlet weak var emergencyContactNumberTextField: UITextField!
+    
+    // Action gets carried out when the user submits the change emergency contact request. The validity of the data is checked (e.g. the phone number must be a 10-digit number), and then the data is updated in Firebase and sent back to the Profile VC to update the UI without an extra database query
     @IBAction func changeContactAction(_ sender: Any) {
+        
+        //check if the text fields have text
         if(emergencyContactNameTextField.text == nil || emergencyContactNameTextField.text == "" || emergencyContactNumberTextField.text == "" || emergencyContactNumberTextField.text == nil) {
             let alert = UIAlertController(title: "Error!", message: "You must enter both a name and number for your emergency contact", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
             self.present(alert, animated: true)
             return
         }
+        
+        // check if the number is 10 digits and purely numeric
         else if emergencyContactNumberTextField.text!.count != 10 || !emergencyContactNumberTextField.text!.isNumeric {
             let alert = UIAlertController(title: "Error!", message: "Enter the number in the format 0000000000 (note that the country code defaults to 1 as only US-based calling is currently supported)", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
@@ -40,6 +46,7 @@ class EmergencyContactViewController: UIViewController {
             "number": number,
         ]
         
+        // update Firebase and Profile VC
         updateEmergencyContactData(data: emergencyContactData)
         delegate?.updateEmergencyContact(self, name: name, number: number)
     }
