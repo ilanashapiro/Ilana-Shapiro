@@ -92,24 +92,6 @@
                                     <segue destination="D96-HT-EJW" kind="show" id="E5B-4f-Ozu"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="g5q-9S-nsF">
-                                <rect key="frame" x="88" y="414" width="239" height="72"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="50"/>
-                                <state key="normal" title="Firebase UI"/>
-                                <connections>
-                                    <action selector="didTapFirebaseUI:" destination="piu-wM-JhH" eventType="touchUpInside" id="oPs-t4-MJ5"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1JS-tx-Waj">
-                                <rect key="frame" x="30" y="707" width="354" height="39"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="22"/>
-                                <state key="normal" title="Go Directly to Maps Page (for testing)"/>
-                                <connections>
-                                    <segue destination="weJ-Oj-yt0" kind="show" id="Hom-yo-fNb"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="GiW-xN-ubM"/>
@@ -145,7 +127,7 @@
                                 <rect key="frame" x="20" y="361" width="374" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" secureTextEntry="YES"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pxb-WK-lpb">
                                 <rect key="frame" x="137" y="477" width="140" height="81"/>
@@ -300,6 +282,10 @@
                                 <rect key="frame" x="145" y="588" width="105" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Delete Account"/>
+                                <connections>
+                                    <action selector="deleteAccountAction:" destination="eqP-s3-mgC" eventType="touchUpInside" id="7LM-xy-cWU"/>
+                                    <segue destination="yqU-3f-rSM" kind="unwind" identifier="toWelcomeScreen" unwindAction="unwindToWelcomeWithSegue:" id="jVh-tj-gS3"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
@@ -314,6 +300,7 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qbb-ep-i0m" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <exit id="yqU-3f-rSM" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="2498.5507246376815" y="-349.55357142857139"/>
         </scene>
@@ -364,7 +351,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ewx-Nf-qMZ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3299" y="-1228"/>
+            <point key="canvasLocation" x="2835" y="-1758"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="Vno-z5-rUk">
@@ -388,6 +375,7 @@
         <!--Navigation Controller-->
         <scene sceneID="ThB-rv-bKY">
             <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="tze-Cl-xSF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <navigationController storyboardIdentifier="MapNavigationController" automaticallyAdjustsScrollViewInsets="NO" id="weJ-Oj-yt0" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="05S-eJ-Fdm"/>
@@ -400,7 +388,6 @@
                         <segue destination="l2D-4s-Yp9" kind="relationship" relationship="rootViewController" id="2iv-FV-RKK"/>
                     </connections>
                 </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="tze-Cl-xSF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="385.50724637681162" y="-434.59821428571428"/>
         </scene>
@@ -460,7 +447,7 @@
                                 <rect key="frame" x="43" y="135" width="334" height="34"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" secureTextEntry="YES"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oeB-DT-8Yg">
                                 <rect key="frame" x="146" y="192" width="123" height="30"/>
@@ -481,11 +468,10 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bbu-zX-doM" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3757.971014492754" y="-564.50892857142856"/>
+            <point key="canvasLocation" x="3732" y="-1667"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="Hom-yo-fNb"/>
-        <segue reference="aXd-Gn-T5l"/>
+        <segue reference="buC-OI-UM0"/>
     </inferredMetricsTieBreakers>
 </document>

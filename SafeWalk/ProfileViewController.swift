@@ -18,11 +18,57 @@ class ProfileViewController: UIViewController, EmergencyContactViewControllerDel
         controller.navigationController?.popViewController(animated: true)
     }
     
-    var db:Firestore!
+    var db: Firestore!
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var emailLabel: UILabel!
     @IBOutlet weak var emergencyContactNameLabel: UILabel!
     @IBOutlet weak var emergencyContactNumberLabel: UILabel!
+    
+    @IBAction func deleteAccountAction(_ sender: Any) {
+        let user = Auth.auth().currentUser
+        let alert = UIAlertController(title: "You must reauthenticate before deleting your account", message: nil, preferredStyle: .alert)
+        alert.addTextField()
+        alert.addTextField { (password) in
+            password.isSecureTextEntry = true
+        }
+        
+        let submitAction = UIAlertAction(title: "OK", style: .default, handler: { [unowned alert] _ in
+            let email = alert.textFields![0]
+            let password = alert.textFields![1]
+            let credential = EmailAuthProvider.credential(withEmail:email.text ?? "", password: password.text ?? "")
+            
+            // Prompt the user to re-provide their sign-in credentials
+            user?.reauthenticate(with: credential, completion: { (result, error) in
+                if let error = error {
+                    let alert = UIAlertController(title: "Error in Reauthentication!", message: error.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                    self.present(alert, animated: true)
+                } else {
+                    user?.delete { error in
+                        if let error = error {
+                            let alert = UIAlertController(title: "Error in delete account!", message: error.localizedDescription, preferredStyle: .alert)
+                            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+                            self.present(alert, animated: true)
+                        } else {
+                            let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+                            let welcomeNavigationController = storyBoard.instantiateViewController(withIdentifier: "welcomeNavigationController")
+                            let window = self.view.window
+                            window?.rootViewController = welcomeNavigationController
+                            self.navigationController?.popToRootViewController(animated: true)
+                        }
+                    }
+                    
+                }
+            })
+        })
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default, handler:nil)
+        
+        alert.addAction(cancelAction)
+        alert.addAction(submitAction)
+        present(alert, animated: true)
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()

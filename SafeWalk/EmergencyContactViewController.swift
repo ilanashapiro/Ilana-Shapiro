@@ -46,6 +46,7 @@ class EmergencyContactViewController: UIViewController {
             "number": number,
         ]
         
+        
         // update Firebase and Profile VC
         updateEmergencyContactData(data: emergencyContactData)
         delegate?.updateEmergencyContact(self, name: name, number: number)
