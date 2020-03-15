@@ -174,7 +174,7 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
-                                    <action selector="openDestinationLocation:" destination="l2D-4s-Yp9" eventType="editingDidEnd" id="1f8-Ba-13w"/>
+                                    <action selector="openDestinationLocation:" destination="l2D-4s-Yp9" eventType="editingDidBegin" id="u6P-fS-QmZ"/>
                                 </connections>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bt2-dr-89v">
@@ -197,7 +197,7 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
-                                    <action selector="openStartLocation:" destination="l2D-4s-Yp9" eventType="editingDidEnd" id="P9u-q4-OdN"/>
+                                    <action selector="openStartLocation:" destination="l2D-4s-Yp9" eventType="editingDidBegin" id="Mzy-jP-1y4"/>
                                 </connections>
                             </textField>
                         </subviews>
