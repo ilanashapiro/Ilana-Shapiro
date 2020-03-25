@@ -12,13 +12,16 @@ import FirebaseUI
 import GoogleMaps
 import GooglePlaces
 
+//********************* Ilana's FBI crime api key: 069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO  ****************************************************
+//********************* Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 **************************************
+ 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
         FirebaseApp.configure()
-        GMSServices.provideAPIKey("AIzaSyDUHxMro0w_AjO4xsCQzYVWTfMXILeBS9g")
-        GMSPlacesClient.provideAPIKey("AIzaSyDUHxMro0w_AjO4xsCQzYVWTfMXILeBS9g")
+//        AIzaSyDUHxMro0w_AjO4xsCQzYVWTfMXILeBS9g   jenna's key
+        GMSServices.provideAPIKey("AIzaSyAsUXoPmqBV1DmcSqiLwHCYkb2llbBh3Xc")
+        GMSPlacesClient.provideAPIKey("AIzaSyAsUXoPmqBV1DmcSqiLwHCYkb2llbBh3Xc")
         return true
     }
 

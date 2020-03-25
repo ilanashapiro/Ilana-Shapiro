@@ -112,6 +112,44 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     // add func drawPath() here !!
+    func drawPath(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D) {
+        let origin = "\(source.latitude),\(source.longitude)"
+        let destination = "\(destination.latitude),\(destination.longitude)"
+
+        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=driving&key=API_KEY"
+
+        let url = URL(string: urlString)
+        URLSession.shared.dataTask(with: url!, completionHandler: {
+            (data, response, error) in
+            if (error != nil) {
+                print("error")
+            } else {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+                    print(json)
+                    let routes = json["routes"] as! NSArray
+                    
+                    DispatchQueue.main.async {
+                        self.googleMaps.clear()
+                        for route in routes {
+                            let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                            let points = routeOverviewPolyline.object(forKey: "points")
+                            let path = GMSPath.init(fromEncodedPath: points! as! String)
+                            let polyline = GMSPolyline.init(path: path)
+                            polyline.strokeWidth = 3
+
+                            let bounds = GMSCoordinateBounds(path: path!)
+                            self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
+
+                            polyline.map = self.googleMaps
+                        }
+                    }
+                } catch let error as NSError{
+                    print("error:\(error)")
+                }
+            }
+        }).resume()
+    }
     
     // when start location is tapped, open search location
     @IBAction func openStartLocation(_ sender: UITextField) {
@@ -163,6 +201,47 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @objc func profileButtonTapped() {
         performSegue(withIdentifier: "profileSegue", sender: self)
     }
+    
+    // https://crime-data-explorer.fr.cloud.gov/api  -- not using this one
+    // https://www.crimeometer.com/crime-data-api-documentation
+    func getNumberCrimesInLocationRadius(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D, within radius: Double) -> Int {
+        let urlString = "https://private-anon-e3a624e21e-crimeometer.apiary-mock.com/v1/incidents/raw-data?lat=\(source.latitude)&lon=\(source.longitude)&distance=10km&datetime_ini=2019-04-20T16:54:00.000Z&datetime_end=2019-04-25T16:54:00.000Z&page=page"
+        
+        //"https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=driving&key=API_KEY"
+
+        let url = URL(string: urlString)
+        URLSession.shared.dataTask(with: url!, completionHandler: {
+            (data, response, error) in
+            if (error != nil) {
+                print("error")
+            } else {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+                    print(json)
+                    let routes = json["routes"] as! NSArray
+                    
+                    DispatchQueue.main.async {
+                        self.googleMaps.clear()
+                        for route in routes {
+                            let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                            let points = routeOverviewPolyline.object(forKey: "points")
+                            let path = GMSPath.init(fromEncodedPath: points! as! String)
+                            let polyline = GMSPolyline.init(path: path)
+                            polyline.strokeWidth = 3
+
+                            let bounds = GMSCoordinateBounds(path: path!)
+                            self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
+
+                            polyline.map = self.googleMaps
+                        }
+                    }
+                } catch let error as NSError{
+                    print("error:\(error)")
+                }
+            }
+        }).resume()
+        return 0
+    }
 
     // custom loading of the view to display Google Maps
     override func loadView() {
@@ -175,6 +254,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let profileButton = UIBarButtonItem(title: "Go to Profile", style: UIBarButtonItem.Style.plain, target: self, action:#selector(profileButtonTapped))
         self.navigationItem.leftBarButtonItem = logoutButton
         self.navigationItem.rightBarButtonItem = profileButton
+        
+        let locationClaremont = CLLocationCoordinate2D(latitude: 34.0967, longitude: -117.7198)
+        let locationUpland = CLLocationCoordinate2D(latitude: 34.0975, longitude: -117.76484)
+        drawPath(from: locationClaremont, to: locationUpland)
     }
 
 }
