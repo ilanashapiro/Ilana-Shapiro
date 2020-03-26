@@ -27,7 +27,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     var locationSelected = Location.startLocation
   
     var locationStart = CLLocation()
-    var locationEnd = CLLocation()
+    var locationEnd = CLLocation() 
   
     // creates the page that is shown when loaded - contains map and search bars
     override func viewDidLoad() {
@@ -111,44 +111,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         return false
     }
     
-    func drawAllPaths(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D) {
-        let origin = "\(source.latitude),\(source.longitude)"
-        let destination = "\(destination.latitude),\(destination.longitude)"
-
-        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=driving&key=API_KEY"
-
-        let url = URL(string: urlString)
-        URLSession.shared.dataTask(with: url!, completionHandler: {
-            (data, response, error) in
-            if (error != nil) {
-                print("error")
-            } else {
-                do {
-                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
-                    print(json)
-                    let routes = json["routes"] as! NSArray
-                    
-                    DispatchQueue.main.async {
-                        self.googleMaps.clear()
-                        for route in routes {
-                            let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
-                            let points = routeOverviewPolyline.object(forKey: "points")
-                            let path = GMSPath.init(fromEncodedPath: points! as! String)
-                            let polyline = GMSPolyline.init(path: path)
-                            polyline.strokeWidth = 3
-
-                            let bounds = GMSCoordinateBounds(path: path!)
-                            self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
-
-                            polyline.map = self.googleMaps
-                        }
-                    }
-                } catch let error as NSError{
-                    print("error:\(error)")
-                }
-            }
-        }).resume()
-    }
     
     // when start location is tapped, open search location
     @IBAction func openStartLocation(_ sender: UITextField) {
@@ -201,23 +163,104 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         performSegue(withIdentifier: "profileSegue", sender: self)
     }
     
+    func radiansToDegrees(_ radians: Double) -> Double {
+        return radians * 180.0 / Double.pi
+    }
+    
+    func degreesToRadians(_ degrees: Double) -> Double {
+        return degrees * Double.pi / 180
+    }
+    
+    //gets the distance between two GPS coords. unit should be "km" for kilometers, anything else defaults to miles.
+    func getDistanceBetween(startCoordinates: CLLocationCoordinate2D, endCoordinates: CLLocationCoordinate2D, unit: String) -> Double {
+//        https://www.geodatasource.com/developers/swift
+        let theta = degreesToRadians(startCoordinates.longitude - endCoordinates.longitude)
+        let startLatitudeRad = degreesToRadians(startCoordinates.latitude)
+        let endLatitudeRad = degreesToRadians(endCoordinates.latitude)
+
+        var dist = sin(startLatitudeRad) * sin(endLatitudeRad) + cos(startLatitudeRad) * cos(endLatitudeRad) * cos(theta)
+        dist = acos(dist)
+        dist = radiansToDegrees(dist)
+        dist = dist * 60 * 1.1515
+        if (unit == "km") {
+            dist = dist * 1.609344
+        }
+        return dist
+//        https://community.esri.com/groups/coordinate-reference-systems/blog/2017/10/05/haversine-formula
+//      Coordinates in decimal degrees (e.g. 2.89078, 12.79797)
+//        let lon1 = startCoordinates.longitude
+//        let lat1 = startCoordinates.latitude
+//
+//        let lon2 = endCoordinates.longitude
+//        let lat2 = endCoordinates.latitude
+//
+//        let R = 6371000.0  //radius of Earth in meters
+//        let phi_1 = degreesToRadians(lat1)
+//        let phi_2 = degreesToRadians(lat2)
+//
+//        let delta_phi = degreesToRadians(lat2 - lat1)
+//        let delta_lambda = degreesToRadians(lon2 - lon1)
+//
+//        let a = pow(sin(delta_phi / 2.0), 2) + cos(phi_1) * cos(phi_2) * pow(sin(delta_lambda / 2.0), 2)
+//
+//        let c = 2 * atan2(sqrt(a), sqrt(1 - a))
+//
+//        var meters = R * c  //output distance in meters
+//        var km = meters / 1000.0  // output distance in kilometers
+
+//        meters = round(meters, 3)
+//        km = round(km, 3)
+        
+//        return km
+    }
+    
+    func getMidpoint(startCoordinates: CLLocationCoordinate2D, endCoordinates: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
+        // REFERENCE: https://stackoverflow.com/questions/4656802/midpoint-between-two-latitude-and-longitude
+        
+        var center = CLLocationCoordinate2D.init()
+        
+        let longitudeDistRad = degreesToRadians(endCoordinates.longitude - startCoordinates.longitude)
+        
+        let startLatitudeRad = degreesToRadians(startCoordinates.latitude)
+        let endLatitudeRad = degreesToRadians(endCoordinates.latitude)
+        let startLongitudeRad = degreesToRadians(startCoordinates.longitude)
+
+        let Bx = cos(endLatitudeRad) * cos(longitudeDistRad)
+        let By = cos(endLatitudeRad) * sin(longitudeDistRad)
+        let centerLatitudeRad = atan2(sin(startLatitudeRad) + sin(endLatitudeRad), sqrt(pow((cos(startLatitudeRad) + Bx), 2) + pow(By, 2)))
+        let centerLongitudeRad = startLongitudeRad + atan2(By, cos(startLatitudeRad) + Bx)
+
+        center.latitude = radiansToDegrees(centerLatitudeRad)
+        center.longitude = radiansToDegrees(centerLongitudeRad)
+        
+        return center
+    }
+
     // https://crime-data-explorer.fr.cloud.gov/api  -- not using this one
     // https://www.crimeometer.com/crime-data-api-documentation
     //********************* Ilana's FBI crime api key: 069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO  *************************************************
     //********************* Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 ***********************************
-    func getNumberCrimesInLocationRadius(latitude: Double, longitude: Double, withinKm radius: Double) -> Int {
-        let crimOMeterAPIKey = "ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4"
-        let fbiAPIKey = "069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
-        
-        let urlString = "https://api.crimeometer.com/v1/incidents/raw-data?lat=\(latitude)&lon=\(longitude)&distance=\(radius)km&datetime_ini=2010-01-01T00:00:00.000Z&datetime_end=2018-08-26T00:00:00.000Z&page=1"
-        
+    func getNumberCrimesAlongPath(path: GMSPath, startCoordinates:CLLocationCoordinate2D, endCoordinates:CLLocationCoordinate2D ,startDateTime: String, endDateTime: String, tolerance: Double, units: String) -> Int {
+//        let fbiAPIKey = "069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
 //        let endpointFBI = "/api/data/nibrs/aggravated-assault/offense/states/ny/COUNT"
 //        let urlStringFBI = "https://api.usa.gov/crime/fbi/sapi/\(endpointFBI)?api_key=069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
+        let crimeOMeterAPIKey = "ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4"
+
+        // WILL REPLACE THE PARAMS FOR LAT AND LONG AFTER GMSPATH IS SUCCESSFULLY IMPLEMENTED. THE BELOW COMMENTED OUT CODE IS TEMPORARY
+        //        let latitude = path?.coordinate(at: 0)
+        //        let longitude = path?.coordinate(at: path?.count() ?? 0)
+        
+        let midpoint = getMidpoint(startCoordinates: startCoordinates, endCoordinates: endCoordinates)
+        print("midpoint:", midpoint.latitude, midpoint.longitude)
+        let radius = getDistanceBetween(startCoordinates: midpoint, endCoordinates: endCoordinates, unit: units)
+        print("radius", radius, units)
+        let urlString = "https://api.crimeometer.com/v1/incidents/raw-data?lat=\(midpoint.latitude)&lon=\(midpoint.longitude)&distance=\(radius*10)\(units)&datetime_ini=\(startDateTime)&datetime_end=\(endDateTime)&page=1"
 
         let url = URL(string: urlString)
         var urlRequest = URLRequest(url: url!)
-        urlRequest.addValue(crimOMeterAPIKey, forHTTPHeaderField: "x-api-key")
+        urlRequest.addValue(crimeOMeterAPIKey, forHTTPHeaderField: "x-api-key")
         urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
+        
         
         URLSession.shared.dataTask(with: urlRequest, completionHandler: {
             (data, response, error) in
@@ -225,16 +268,82 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 print("error")
             } else {
                 do {
-                    print("data:")
-//                    print(data?.base64EncodedString())
-                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) //as! [String : AnyObject]
-                    print(json)
+//                    print("data:")
+                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+//                    print(json)
+//                    print(json["incidents"])
+                    if let incidentsArr = json["incidents"] as? Array<Any> {
+                        for incident in incidentsArr {
+//                            print(incident)
+                            if let incidentDict = incident as? Dictionary<String, Any> {
+//                                print(incidentDict)
+                                if let incidentLatitude = incidentDict["incident_latitude"] as? Double,
+                                    let incidentLongitude = incidentDict["incident_longitude"] as? Double,
+                                    let incidentDescription = incidentDict["incident_offense_detail_description"] as? String,
+                                    let incidentTitle = incidentDict["incident_offense"] as? String {
+                                    print(incidentLatitude, incidentLongitude, incidentDescription)
+                                    let incidentCoords = CLLocationCoordinate2D(latitude: incidentLongitude, longitude: incidentLatitude)
+                                    if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, tolerance)) {
+                                        DispatchQueue.main.async {
+                                            let position = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
+                                            let marker = GMSMarker(position: position)
+                                            marker.title = incidentTitle
+                                            marker.snippet = incidentDescription
+                                            marker.map = self.googleMaps
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                 } catch let error as NSError{
                     print("error:\(error)")
                 }
             }
         }).resume()
         return 0
+    }
+    
+    func drawAllPathsWithCompletion(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D, completion: @escaping  (Array<Any>) -> Void) {
+        let origin = "\(source.latitude),\(source.longitude)"
+        let destination = "\(destination.latitude),\(destination.longitude)"
+        
+        //https://developers.google.com/maps/documentation/directions/intro
+        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=walking&alternatives = true&key=API_KEY"
+
+        let url = URL(string: urlString)
+        URLSession.shared.dataTask(with: url!, completionHandler: {
+            (data, response, error) in
+            if (error != nil) {
+                print("error")
+            } else {
+                do {
+                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+                    print(json)
+                    if let routes = json["routes"] as? Array<Any> {
+                        DispatchQueue.main.async {
+                            self.googleMaps.clear()
+                            for route in routes {
+                                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                                let points = routeOverviewPolyline.object(forKey: "points")
+                                let path = GMSPath.init(fromEncodedPath: points! as! String)
+                                let polyline = GMSPolyline.init(path: path)
+                                polyline.strokeWidth = 3
+
+                                let bounds = GMSCoordinateBounds(path: path!)
+                                self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
+
+                                polyline.map = self.googleMaps
+                            }
+                        }
+                        completion(routes)
+                    }
+                } catch let error as NSError{
+                    print("error:\(error)")
+                }
+            }
+        }).resume()
     }
 
     // custom loading of the view to display Google Maps
@@ -255,8 +364,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let locationUnionStation = CLLocationCoordinate2D(latitude: 34.0562, longitude: -118.2365)
         let locationLosAngeles = CLLocationCoordinate2D(latitude: 34.0522, longitude: -118.2437)
         let locationNewYork = CLLocationCoordinate2D(latitude: 40.7127837, longitude: -74.0059413)
-        drawAllPaths(from: locationClaremont, to: locationUpland)
-        getNumberCrimesInLocationRadius(latitude: locationClaremont.latitude, longitude: locationClaremont.longitude, withinKm: 10)
+        drawAllPathsWithCompletion(from: locationClaremont, to: locationUpland) { (routes) in
+            for route in routes {
+                let encodedPath:String = (route as! NSDictionary).value(forKey: "overview_polyline") as! String
+                if let path = GMSPath(fromEncodedPath: encodedPath) {
+                    self.getNumberCrimesAlongPath(path: path, startCoordinates: locationClaremont, endCoordinates: locationUpland, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 5, units: "km")
+                }
+            }
+        }
+        
     }
 
 }
