@@ -111,8 +111,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         return false
     }
     
-    // add func drawPath() here !!
-    func drawPath(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D) {
+    func drawAllPaths(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D) {
         let origin = "\(source.latitude),\(source.longitude)"
         let destination = "\(destination.latitude),\(destination.longitude)"
 
@@ -204,37 +203,32 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     // https://crime-data-explorer.fr.cloud.gov/api  -- not using this one
     // https://www.crimeometer.com/crime-data-api-documentation
-    func getNumberCrimesInLocationRadius(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D, within radius: Double) -> Int {
-        let urlString = "https://private-anon-e3a624e21e-crimeometer.apiary-mock.com/v1/incidents/raw-data?lat=\(source.latitude)&lon=\(source.longitude)&distance=10km&datetime_ini=2019-04-20T16:54:00.000Z&datetime_end=2019-04-25T16:54:00.000Z&page=page"
+    //********************* Ilana's FBI crime api key: 069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO  *************************************************
+    //********************* Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 ***********************************
+    func getNumberCrimesInLocationRadius(latitude: Double, longitude: Double, withinKm radius: Double) -> Int {
+        let crimOMeterAPIKey = "ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4"
+        let fbiAPIKey = "069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
         
-        //"https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=driving&key=API_KEY"
+        let urlString = "https://api.crimeometer.com/v1/incidents/raw-data?lat=\(latitude)&lon=\(longitude)&distance=\(radius)km&datetime_ini=2010-01-01T00:00:00.000Z&datetime_end=2018-08-26T00:00:00.000Z&page=1"
+        
+//        let endpointFBI = "/api/data/nibrs/aggravated-assault/offense/states/ny/COUNT"
+//        let urlStringFBI = "https://api.usa.gov/crime/fbi/sapi/\(endpointFBI)?api_key=069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
 
         let url = URL(string: urlString)
-        URLSession.shared.dataTask(with: url!, completionHandler: {
+        var urlRequest = URLRequest(url: url!)
+        urlRequest.addValue(crimOMeterAPIKey, forHTTPHeaderField: "x-api-key")
+        urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
+        
+        URLSession.shared.dataTask(with: urlRequest, completionHandler: {
             (data, response, error) in
             if (error != nil) {
                 print("error")
             } else {
                 do {
-                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+                    print("data:")
+//                    print(data?.base64EncodedString())
+                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) //as! [String : AnyObject]
                     print(json)
-                    let routes = json["routes"] as! NSArray
-                    
-                    DispatchQueue.main.async {
-                        self.googleMaps.clear()
-                        for route in routes {
-                            let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
-                            let points = routeOverviewPolyline.object(forKey: "points")
-                            let path = GMSPath.init(fromEncodedPath: points! as! String)
-                            let polyline = GMSPolyline.init(path: path)
-                            polyline.strokeWidth = 3
-
-                            let bounds = GMSCoordinateBounds(path: path!)
-                            self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
-
-                            polyline.map = self.googleMaps
-                        }
-                    }
                 } catch let error as NSError{
                     print("error:\(error)")
                 }
@@ -257,7 +251,12 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         let locationClaremont = CLLocationCoordinate2D(latitude: 34.0967, longitude: -117.7198)
         let locationUpland = CLLocationCoordinate2D(latitude: 34.0975, longitude: -117.76484)
-        drawPath(from: locationClaremont, to: locationUpland)
+        let locationDisneyHall = CLLocationCoordinate2D(latitude: 34.0553, longitude: -118.2498)
+        let locationUnionStation = CLLocationCoordinate2D(latitude: 34.0562, longitude: -118.2365)
+        let locationLosAngeles = CLLocationCoordinate2D(latitude: 34.0522, longitude: -118.2437)
+        let locationNewYork = CLLocationCoordinate2D(latitude: 40.7127837, longitude: -74.0059413)
+        drawAllPaths(from: locationClaremont, to: locationUpland)
+        getNumberCrimesInLocationRadius(latitude: locationClaremont.latitude, longitude: locationClaremont.longitude, withinKm: 10)
     }
 
 }

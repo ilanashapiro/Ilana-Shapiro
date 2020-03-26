@@ -12,9 +12,7 @@ import FirebaseUI
 import GoogleMaps
 import GooglePlaces
 
-//********************* Ilana's FBI crime api key: 069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO  ****************************************************
-//********************* Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 **************************************
- 
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
