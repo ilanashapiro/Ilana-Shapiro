@@ -310,7 +310,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let destination = "\(destination.latitude),\(destination.longitude)"
         
         //https://developers.google.com/maps/documentation/directions/intro
-        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=walking&alternatives = true&key=API_KEY"
+        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=walking&alternatives=true&key=API_KEY"
 
         let url = URL(string: urlString)
         URLSession.shared.dataTask(with: url!, completionHandler: {
