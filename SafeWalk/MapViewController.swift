@@ -28,6 +28,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
   
     var locationStart = CLLocation()
     var locationEnd = CLLocation()
+    
+    var lastTappedRoutePolyline = GMSPolyline()
   
     // creates the page that is shown when loaded - contains map and search bars
     override func viewDidLoad() {
@@ -100,6 +102,20 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     func mapView(_ mapView: GMSMapView, didTap marker: GMSMarker) -> Bool {
         googleMaps.isMyLocationEnabled = true
         return false
+    }
+    
+    func mapView(_ mapView: GMSMapView, didTap overlay: GMSOverlay) {
+        if let routePolyline = overlay as? GMSPolyline {
+            if (routePolyline == lastTappedRoutePolyline) {
+                routePolyline.strokeWidth /= 2
+                return
+            }
+            if (lastTappedRoutePolyline.path != nil) {
+                lastTappedRoutePolyline.strokeWidth /= 2
+            }
+            routePolyline.strokeWidth *= 2
+            lastTappedRoutePolyline = routePolyline
+        }
     }
 
     func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D) {
@@ -357,6 +373,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 let polyline = GMSPolyline.init(path: path)
                                 polyline.strokeWidth = 3
                                 polyline.strokeColor = self.randomColor()
+                                polyline.isTappable = true
 
                                 let bounds = GMSCoordinateBounds(path: path!)
                                 self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
