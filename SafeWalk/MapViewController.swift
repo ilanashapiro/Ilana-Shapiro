@@ -283,8 +283,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                     let incidentDescription = incidentDict["incident_offense_detail_description"] as? String,
                                     let incidentTitle = incidentDict["incident_offense"] as? String {
                                     print(incidentLatitude, incidentLongitude, incidentDescription)
-                                    let incidentCoords = CLLocationCoordinate2D(latitude: incidentLongitude, longitude: incidentLatitude)
-                                    if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, tolerance)) {
+                                    let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
+//                                    if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, tolerance)) {
                                         DispatchQueue.main.async {
                                             let position = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
                                             let marker = GMSMarker(position: position)
@@ -292,7 +292,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                             marker.snippet = incidentDescription
                                             marker.map = self.googleMaps
                                         }
-                                    }
+//                                    }
                                 }
                             }
                         }
@@ -323,11 +323,11 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 do {
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
                     print(json)
-                    if let routes = json["routes"] as? Array<Any> {
+                    if let routes = json["routes"] as? [[String:Any]] {
                         DispatchQueue.main.async {
                             self.googleMaps.clear()
                             for route in routes {
-                                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                                let routeOverviewPolyline:NSDictionary = (route as NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
                                 let points = routeOverviewPolyline.object(forKey: "points")
                                 let path = GMSPath.init(fromEncodedPath: points! as! String)
                                 let polyline = GMSPolyline.init(path: path)
@@ -368,10 +368,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let locationNewYork = CLLocationCoordinate2D(latitude: 40.7127837, longitude: -74.0059413)
         drawAllPathsWithCompletion(from: locationClaremont, to: locationUpland) { (routes) in
             for route in routes {
-                let encodedPath:String = (route as! NSDictionary).value(forKey: "overview_polyline") as! String
-                if let path = GMSPath(fromEncodedPath: encodedPath) {
-                    self.getCrimesAlongPath(path: path, startCoordinates: locationClaremont, endCoordinates: locationUpland, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 5, units: "km")
-                }
+                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                let points = routeOverviewPolyline.object(forKey: "points")
+                let path = GMSPath.init(fromEncodedPath: points! as! String)
+                self.getCrimesAlongPath(path: path!, startCoordinates: locationClaremont, endCoordinates: locationUpland, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 5, units: "km")
             }
         }
         
