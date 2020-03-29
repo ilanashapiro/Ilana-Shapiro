@@ -15,14 +15,17 @@ import GooglePlaces
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    /* AIzaSyDUHxMro0w_AjO4xsCQzYVWTfMXILeBS9g | Jenna's key */
+    /* AIzaSyD0LYhCqrg3c3fdoEyYH7l0gptZ_mHTedw | Gabe's key (for billing) */
+    let MAPS_API_KEY = "AIzaSyD0LYhCqrg3c3fdoEyYH7l0gptZ_mHTedw"
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
         
-        /* AIzaSyDUHxMro0w_AjO4xsCQzYVWTfMXILeBS9g | Jenna's key */
-        /* AIzaSyD0LYhCqrg3c3fdoEyYH7l0gptZ_mHTedw | Gabe's key (for billing) */
+       
         
-        GMSServices.provideAPIKey("AIzaSyD0LYhCqrg3c3fdoEyYH7l0gptZ_mHTedw")
-        GMSPlacesClient.provideAPIKey("AIzaSyD0LYhCqrg3c3fdoEyYH7l0gptZ_mHTedw")
+        GMSServices.provideAPIKey(MAPS_API_KEY)
+        GMSPlacesClient.provideAPIKey(MAPS_API_KEY)
         return true
     }
 

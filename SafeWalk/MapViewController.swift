@@ -309,9 +309,11 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let origin = "\(source.latitude),\(source.longitude)"
         let destination = "\(destination.latitude),\(destination.longitude)"
         
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let apiKey = appDelegate.MAPS_API_KEY
         //https://developers.google.com/maps/documentation/directions/intro
-        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=walking&alternatives=true&key=API_KEY"
-
+        let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=walking&alternatives=true&key=\(apiKey)"
+        print(urlString)
         let url = URL(string: urlString)
         URLSession.shared.dataTask(with: url!, completionHandler: {
             (data, response, error) in
