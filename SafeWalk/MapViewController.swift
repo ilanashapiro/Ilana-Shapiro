@@ -61,11 +61,12 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     // a function that can create markers on the map
-    func createMarker(titleMarker: String, iconMarker: UIImage, latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
+    func createMarker(titleMarker: String, latitude: CLLocationDegrees,
+                      longitude: CLLocationDegrees) {
         let marker = GMSMarker()
         marker.position = CLLocationCoordinate2DMake(latitude, longitude)
         marker.title = titleMarker
-        marker.icon = iconMarker
+        marker.icon = GMSMarker.markerImage(with: .red)
         marker.map = googleMaps
     }
     
@@ -387,15 +388,20 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         // change map location
         let camera = GMSCameraPosition.camera(withLatitude: place.coordinate.latitude, longitude: place.coordinate.longitude, zoom: 16.0)
         
+        // default marker title; changes if we select the end location
+        var title = "End Location"
+        
         // set the coordinate to the choice
         if locationSelected == .startLocation {
             locationStart = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
-            createMarker(titleMarker: "Start Location", iconMarker: #imageLiteral(resourceName: "mapspin"), latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
+            title = "Start Location"
         }
         else {
             locationEnd = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
-            createMarker(titleMarker: "End Location", iconMarker: #imageLiteral(resourceName: "mapspin"), latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
         }
+        
+        createMarker(titleMarker: title, latitude: place.coordinate.latitude,
+                     longitude: place.coordinate.longitude)
         
         self.googleMaps.camera = camera
         self.dismiss(animated: true, completion: nil)
