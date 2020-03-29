@@ -27,7 +27,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     var locationSelected = Location.startLocation
   
     var locationStart = CLLocation()
-    var locationEnd = CLLocation() 
+    var locationEnd = CLLocation()
   
     // creates the page that is shown when loaded - contains map and search bars
     override func viewDidLoad() {
@@ -240,15 +240,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     // https://www.crimeometer.com/crime-data-api-documentation
     //********************* Ilana's FBI crime api key: 069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO  *************************************************
     //********************* Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 ***********************************
-    func getNumberCrimesAlongPath(path: GMSPath, startCoordinates:CLLocationCoordinate2D, endCoordinates:CLLocationCoordinate2D ,startDateTime: String, endDateTime: String, tolerance: Double, units: String) -> Int {
+    func getCrimesAlongPath(path: GMSPath, startCoordinates:CLLocationCoordinate2D, endCoordinates:CLLocationCoordinate2D ,startDateTime: String, endDateTime: String, tolerance: Double, units: String) {
 //        let fbiAPIKey = "069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
 //        let endpointFBI = "/api/data/nibrs/aggravated-assault/offense/states/ny/COUNT"
 //        let urlStringFBI = "https://api.usa.gov/crime/fbi/sapi/\(endpointFBI)?api_key=069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
         let crimeOMeterAPIKey = "ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4"
-
-        // WILL REPLACE THE PARAMS FOR LAT AND LONG AFTER GMSPATH IS SUCCESSFULLY IMPLEMENTED. THE BELOW COMMENTED OUT CODE IS TEMPORARY
-        //        let latitude = path?.coordinate(at: 0)
-        //        let longitude = path?.coordinate(at: path?.count() ?? 0)
+        
+        //is this the correct way to get the start and end coords of the path??
+        let startCoordinates = path.coordinate(at: 0)
+        let endCoordinates = path.coordinate(at: path.count())
         
         let midpoint = getMidpoint(startCoordinates: startCoordinates, endCoordinates: endCoordinates)
         print("midpoint:", midpoint.latitude, midpoint.longitude)
@@ -302,7 +302,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 }
             }
         }).resume()
-        return 0
     }
     
     func drawAllPathsWithCompletion(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D, completion: @escaping  (Array<Any>) -> Void) {
@@ -368,7 +367,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             for route in routes {
                 let encodedPath:String = (route as! NSDictionary).value(forKey: "overview_polyline") as! String
                 if let path = GMSPath(fromEncodedPath: encodedPath) {
-                    self.getNumberCrimesAlongPath(path: path, startCoordinates: locationClaremont, endCoordinates: locationUpland, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 5, units: "km")
+                    self.getCrimesAlongPath(path: path, startCoordinates: locationClaremont, endCoordinates: locationUpland, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 5, units: "km")
                 }
             }
         }
