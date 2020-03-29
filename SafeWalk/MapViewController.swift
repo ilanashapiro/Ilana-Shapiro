@@ -236,12 +236,34 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         return center
     }
+    
+    //https://stackoverflow.com/questions/21130433/generate-a-random-uicolor
+    func randomColor() -> UIColor {
+        let red = Double(arc4random_uniform(256)) / 255.0
+        let green = Double(arc4random_uniform(256)) / 255.0
+        let blue = Double(arc4random_uniform(256)) / 255.0
+        let color = UIColor(red: CGFloat(red), green: CGFloat(green), blue: CGFloat(blue), alpha: 1.0)
+        return color
+    }
+    
+    // units should be km, mi, or ft. Anything else defaults to meters.
+    func getMeters(dist:Double, units:String) -> Double {
+        if (units == "km") {
+            return dist * 1000
+        } else if (units == "mi") {
+            return (dist / 0.62137) * 1000
+        } else if (units == "ft") {
+            return dist / 3.2808
+        } else {
+            return dist
+        }
+    }
 
     // https://crime-data-explorer.fr.cloud.gov/api  -- not using this one
     // https://www.crimeometer.com/crime-data-api-documentation
     //********************* Ilana's FBI crime api key: 069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO  *************************************************
     //********************* Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 ***********************************
-    func getCrimesAlongPath(path: GMSPath, startCoordinates:CLLocationCoordinate2D, endCoordinates:CLLocationCoordinate2D ,startDateTime: String, endDateTime: String, tolerance: Double, units: String) {
+    func getCrimesAlongPath(path: GMSPath, startDateTime: String, endDateTime: String, tolerance: Double, units: String) {
 //        let fbiAPIKey = "069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
 //        let endpointFBI = "/api/data/nibrs/aggravated-assault/offense/states/ny/COUNT"
 //        let urlStringFBI = "https://api.usa.gov/crime/fbi/sapi/\(endpointFBI)?api_key=069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
@@ -249,13 +271,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         //is this the correct way to get the start and end coords of the path??
         let startCoordinates = path.coordinate(at: 0)
-        let endCoordinates = path.coordinate(at: path.count())
+        let endCoordinates = path.coordinate(at: path.count() - 1)
         
+        print("start coord:", startCoordinates)
+        print("end coord:", endCoordinates)
         let midpoint = getMidpoint(startCoordinates: startCoordinates, endCoordinates: endCoordinates)
         print("midpoint:", midpoint.latitude, midpoint.longitude)
         let radius = getDistanceBetween(startCoordinates: midpoint, endCoordinates: endCoordinates, unit: units)
         print("radius", radius, units)
-        let urlString = "https://api.crimeometer.com/v1/incidents/raw-data?lat=\(midpoint.latitude)&lon=\(midpoint.longitude)&distance=\(radius*10)\(units)&datetime_ini=\(startDateTime)&datetime_end=\(endDateTime)&page=1"
+        let urlString = "https://api.crimeometer.com/v1/incidents/raw-data?lat=\(midpoint.latitude)&lon=\(midpoint.longitude)&distance=\(radius)\(units)&datetime_ini=\(startDateTime)&datetime_end=\(endDateTime)&page=1"
 
         let url = URL(string: urlString)
         var urlRequest = URLRequest(url: url!)
@@ -282,17 +306,17 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                     let incidentLongitude = incidentDict["incident_longitude"] as? Double,
                                     let incidentDescription = incidentDict["incident_offense_detail_description"] as? String,
                                     let incidentTitle = incidentDict["incident_offense"] as? String {
-                                    print(incidentLatitude, incidentLongitude, incidentDescription)
+//                                    print(incidentLatitude, incidentLongitude, incidentDescription)
                                     let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
-//                                    if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, tolerance)) {
+                                    let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
+                                    if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, toleranceDist)) {
                                         DispatchQueue.main.async {
-                                            let position = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
-                                            let marker = GMSMarker(position: position)
+                                            let marker = GMSMarker(position: incidentCoords)
                                             marker.title = incidentTitle
                                             marker.snippet = incidentDescription
                                             marker.map = self.googleMaps
                                         }
-//                                    }
+                                    }
                                 }
                             }
                         }
@@ -332,6 +356,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 let path = GMSPath.init(fromEncodedPath: points! as! String)
                                 let polyline = GMSPolyline.init(path: path)
                                 polyline.strokeWidth = 3
+                                polyline.strokeColor = self.randomColor()
 
                                 let bounds = GMSCoordinateBounds(path: path!)
                                 self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
@@ -371,7 +396,38 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
                 let points = routeOverviewPolyline.object(forKey: "points")
                 let path = GMSPath.init(fromEncodedPath: points! as! String)
-                self.getCrimesAlongPath(path: path!, startCoordinates: locationClaremont, endCoordinates: locationUpland, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 5, units: "km")
+                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 10, units: "km")
+                
+//                TEST CODE
+//                let incidentCoords = CLLocationCoordinate2D(latitude: 34.0811, longitude: -117.7535)
+//                let tolerance = CLLocationDistance(self.getMeters(dist: 10, units: "km"))
+//                print(GMSGeometryIsLocationOnPathTolerance(incidentCoords, path!, true, tolerance))
+                
+//                let startCoordinates = path!.coordinate(at: 0)
+//                let endCoordinates = path!.coordinate(at: path!.count() - 1)
+//
+//                print("start coord:", startCoordinates)
+//                print("end coord:", endCoordinates)
+//
+//                let midpoint = self.getMidpoint(startCoordinates: startCoordinates, endCoordinates: endCoordinates)
+//                print("midpoint:", midpoint.latitude, midpoint.longitude)
+//                let radius = self.getDistanceBetween(startCoordinates: midpoint, endCoordinates: endCoordinates, unit: "km")
+//                print("radius", radius, "km")
+//                let crimeArrCoordsTEST = [CLLocationCoordinate2D(latitude: 34.0821, longitude: -117.7477),
+//                CLLocationCoordinate2D(latitude: 34.0811, longitude: -117.7535),
+//                CLLocationCoordinate2D(latitude: 34.082, longitude: -117.7528),
+//                CLLocationCoordinate2D(latitude: 34.1025, longitude: -117.7246),
+//                CLLocationCoordinate2D(latitude: 34.1005, longitude: -117.7582),
+//                CLLocationCoordinate2D(latitude: 34.0821, longitude: -117.7477),
+//                CLLocationCoordinate2D(latitude: 34.0811, longitude: -117.7535),
+//                CLLocationCoordinate2D(latitude: 34.082, longitude: -117.7528),
+//                CLLocationCoordinate2D(latitude: 34.1025, longitude: -117.7246),
+//                CLLocationCoordinate2D(latitude: 34.1005, longitude: -117.7582),
+//                CLLocationCoordinate2D(latitude: 34.0821, longitude: -117.7477),
+//                CLLocationCoordinate2D(latitude: 34.0811, longitude: -117.7535),
+//                CLLocationCoordinate2D(latitude: 34.082, longitude: -117.7528),
+//                CLLocationCoordinate2D(latitude: 34.1025, longitude: -117.7246),
+//                CLLocationCoordinate2D(latitude: 34.1005, longitude: -117.7582)]
             }
         }
         
