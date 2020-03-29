@@ -17,9 +17,12 @@ import GooglePlaces
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
-//        AIzaSyDUHxMro0w_AjO4xsCQzYVWTfMXILeBS9g   jenna's key
-        GMSServices.provideAPIKey("AIzaSyAsUXoPmqBV1DmcSqiLwHCYkb2llbBh3Xc")
-        GMSPlacesClient.provideAPIKey("AIzaSyAsUXoPmqBV1DmcSqiLwHCYkb2llbBh3Xc")
+        
+        /* AIzaSyDUHxMro0w_AjO4xsCQzYVWTfMXILeBS9g | Jenna's key */
+        /* AIzaSyD0LYhCqrg3c3fdoEyYH7l0gptZ_mHTedw | Gabe's key (for billing) */
+        
+        GMSServices.provideAPIKey("AIzaSyD0LYhCqrg3c3fdoEyYH7l0gptZ_mHTedw")
+        GMSPlacesClient.provideAPIKey("AIzaSyD0LYhCqrg3c3fdoEyYH7l0gptZ_mHTedw")
         return true
     }
 
@@ -34,7 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
         // Called when the user discards a scene session.
         // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
-        // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
+        // Use this method to release any resource s that were specific to the discarded scenes, as they will not return.
     }
 }
 
