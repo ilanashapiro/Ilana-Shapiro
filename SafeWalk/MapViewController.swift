@@ -120,6 +120,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
 
     func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D) {
         print("Coordinate \(coordinate)")
+        if (lastTappedRoutePolyline.path != nil) {
+            lastTappedRoutePolyline.strokeWidth /= 2
+            lastTappedRoutePolyline.path = nil
+        }
     }
     
     func didTapMyLocationButton(for mapView: GMSMapView) -> Bool {
