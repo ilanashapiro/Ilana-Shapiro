@@ -473,9 +473,10 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
     
     func viewController(_ mapViewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
         
-        let lat = place.coordinate.latitude
-        let long = place.coordinate.longitude
-        let workingLocation = CLLocation(latitude: lat, longitude: long)
+        // the location the user just selected
+        let placeCoord = place.coordinate
+        let workingLocation = CLLocation(latitude: placeCoord.latitude,
+                                         longitude: placeCoord.longitude)
         
         // to be the camera's center; will change if both a start and end
         // location were selected already
@@ -498,9 +499,9 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
             marker = locationStart
             
             // if an end location was also previously selected then get the
-            // midpoint of the selected location and the end destination
+            // midpoint of the selected location and end destination
             if (locationEnd != nil) {
-                center = getMidpoint(startCoordinates: place.coordinate,
+                center = getMidpoint(startCoordinates: placeCoord,
                                      endCoordinates: locationEnd.position)
             }
             
@@ -518,9 +519,9 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
             marker = locationEnd
             
             // if an start location was also previously selected then get the
-            // midpoint of the selected location and the start destination
+            // midpoint of the selected location and start destination
             if (locationStart != nil) {
-                center = getMidpoint(startCoordinates: place.coordinate,
+                center = getMidpoint(startCoordinates: placeCoord,
                                      endCoordinates: locationStart.position)
             }
             
@@ -531,13 +532,12 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         // change map location based on the dropped marker(s)
         let coord1 = (locationStart == nil) ? center : locationStart.position
         let coord2 = (locationEnd == nil) ? center : locationEnd.position
-        let bounds = GMSCoordinateBounds(coordinate: coord1,
-                                         coordinate: coord2)
+        let bounds = GMSCoordinateBounds(coordinate: coord1, coordinate: coord2)
         self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 100.0))
-
         
         // drop the marker onto the map (delegate to method)
-        createMarker(marker: marker, latitude: lat, longitude: long)
+        createMarker(marker: marker, latitude: placeCoord.latitude,
+                     longitude: placeCoord.longitude)
         self.dismiss(animated: true, completion: nil)
     }
     
