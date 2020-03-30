@@ -542,7 +542,7 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         let bounds = GMSCoordinateBounds(coordinate: coord1, coordinate: coord2)
         self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 100.0))
         
-        marker.icon = GMSMarker.markerImage(with: (marker == locationStart) ? .red : .black)
+        marker.icon = GMSMarker.markerImage(with: (marker == locationStart) ? .red : .blue)
         marker.map = googleMaps
     }
     
