@@ -21,6 +21,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBOutlet weak var googleMaps: GMSMapView!
     @IBOutlet weak var startLocation: UITextField!
     @IBOutlet weak var destinationLocation: UITextField!
+    @IBOutlet weak var currentToOrigin: UIButton!
     
     var locationStart: GMSMarker!
     var locationEnd: GMSMarker!
@@ -34,6 +35,11 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         getCurrLocation()
         
+    }
+    
+    /// Sets the current location to the starting location
+    func setCurrentToStart() {
+        //TODO
     }
     
     /// Gets the user's real current location
