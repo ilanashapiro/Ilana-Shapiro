@@ -53,14 +53,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         
     }
-    
-    // a function that can create markers on the map
-    func createMarker(marker: GMSMarker, latitude: CLLocationDegrees,
-                      longitude: CLLocationDegrees) {
-        marker.icon = GMSMarker.markerImage(with: .red)
-        marker.map = googleMaps
-    }
-    
 
     // location manager delegates
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -529,20 +521,29 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         
         }
         
+        // drop the marker onto the map (delegate to method)
+        createMarker(marker: marker, center: center)
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    func wasCancelled(_ mapViewController: GMSAutocompleteViewController) {
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    /// A function that changes the style of markers and places them on the map
+    /// - Parameters:
+    ///   - marker: the marker to place and edit
+    ///   - center: the center around which the app zooms
+    func createMarker(marker: GMSMarker, center: CLLocationCoordinate2D) {
+        
         // change map location based on the dropped marker(s)
         let coord1 = (locationStart == nil) ? center : locationStart.position
         let coord2 = (locationEnd == nil) ? center : locationEnd.position
         let bounds = GMSCoordinateBounds(coordinate: coord1, coordinate: coord2)
         self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 100.0))
         
-        // drop the marker onto the map (delegate to method)
-        createMarker(marker: marker, latitude: placeCoord.latitude,
-                     longitude: placeCoord.longitude)
-        self.dismiss(animated: true, completion: nil)
-    }
-    
-    func wasCancelled(_ mapViewController: GMSAutocompleteViewController) {
-        self.dismiss(animated: true, completion: nil)
+        marker.icon = GMSMarker.markerImage(with: (marker == locationStart) ? .red : .black)
+        marker.map = googleMaps
     }
     
 }
