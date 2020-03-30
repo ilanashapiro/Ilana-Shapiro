@@ -22,11 +22,11 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBOutlet weak var startLocation: UITextField!
     @IBOutlet weak var destinationLocation: UITextField!
     
+    var locationStart: GMSMarker!
+    var locationEnd: GMSMarker!
+    
     var locationManager = CLLocationManager()
     var locationSelected = Location.startLocation
-    
-    var locationStart = CLLocation()
-    var locationEnd = CLLocation()
   
     /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
@@ -55,11 +55,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     // a function that can create markers on the map
-    func createMarker(titleMarker: String, latitude: CLLocationDegrees,
+    func createMarker(marker: GMSMarker, latitude: CLLocationDegrees,
                       longitude: CLLocationDegrees) {
-        let marker = GMSMarker()
-        marker.position = CLLocationCoordinate2DMake(latitude, longitude)
-        marker.title = titleMarker
         marker.icon = GMSMarker.markerImage(with: .red)
         marker.map = googleMaps
     }
@@ -141,7 +138,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         self.locationManager.stopUpdatingLocation()
         self.present(autoCompleteController, animated: true, completion: nil)
-        
     }
     
     
@@ -477,30 +473,71 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
     
     func viewController(_ mapViewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
         
-        // change map location
-        let camera = GMSCameraPosition.camera(withLatitude: place.coordinate.latitude, longitude: place.coordinate.longitude, zoom: 16.0)
+        let lat = place.coordinate.latitude
+        let long = place.coordinate.longitude
+        let workingLocation = CLLocation(latitude: lat, longitude: long)
         
-        // default marker title; changes if we select the end location
-        var title = "Start Location"
+        // to be the camera's center; will change if both a start and end
+        // location were selected already
+        var center = place.coordinate
         
-        // will be the new value of either the start or end location fields
-        let workingLocation = CLLocation(latitude: place.coordinate.latitude,
-                                         longitude: place.coordinate.longitude)
+        // the marker to drop on the map
+        var marker: GMSMarker!
         
-        // set the coordinate to the choice
-        if locationSelected == .startLocation {
-            locationStart = workingLocation
+        // cases for camera zoom depending on if start or end was just specified
+        switch locationSelected {
+        case .startLocation:
+            
+            // overwrite existing start marker
+            if (locationStart != nil) {
+                locationStart.map = nil
+            }
+            
+            // update the start location
+            locationStart = GMSMarker(position: workingLocation.coordinate)
+            marker = locationStart
+            
+            // if an end location was also previously selected then get the
+            // midpoint of the selected location and the end destination
+            if (locationEnd != nil) {
+                center = getMidpoint(startCoordinates: place.coordinate,
+                                     endCoordinates: locationEnd.position)
+            }
+            
+            startLocation.text = place.name
+            
+        case .destinationLocation:
+            
+            // overwrite existing end marker
+            if (locationEnd != nil) {
+                locationEnd.map = nil
+            }
+            
+            // update the end location
+            locationEnd = GMSMarker(position: workingLocation.coordinate)
+            marker = locationEnd
+            
+            // if an start location was also previously selected then get the
+            // midpoint of the selected location and the start destination
+            if (locationStart != nil) {
+                center = getMidpoint(startCoordinates: place.coordinate,
+                                     endCoordinates: locationStart.position)
+            }
+            
+            destinationLocation.text = place.name
+        
         }
-        else {
-            locationEnd = workingLocation
-            title = "End Location"
-        }
+        
+        // change map location based on the dropped marker(s)
+        let coord1 = (locationStart == nil) ? center : locationStart.position
+        let coord2 = (locationEnd == nil) ? center : locationEnd.position
+        let bounds = GMSCoordinateBounds(coordinate: coord1,
+                                         coordinate: coord2)
+        self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 100.0))
+
         
         // drop the marker onto the map (delegate to method)
-        createMarker(titleMarker: title, latitude: place.coordinate.latitude,
-                     longitude: place.coordinate.longitude)
-        
-        self.googleMaps.camera = camera
+        createMarker(marker: marker, latitude: lat, longitude: long)
         self.dismiss(animated: true, completion: nil)
     }
     
