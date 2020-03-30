@@ -22,43 +22,35 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBOutlet weak var startLocation: UITextField!
     @IBOutlet weak var destinationLocation: UITextField!
     
-    
     var locationManager = CLLocationManager()
     var locationSelected = Location.startLocation
-  
+    
     var locationStart = CLLocation()
     var locationEnd = CLLocation()
-    
-    var lastTappedRoutePolyline = GMSPolyline()
   
-    // creates the page that is shown when loaded - contains map and search bars
+    /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
         super.viewDidLoad()
-      
-        locationManager = CLLocationManager()
-        locationManager.delegate = self
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.startMonitoringSignificantLocationChanges()
         
+        getCurrLocation()
         
-        // create a GMSCameraPosition that tells the map to display the coordinate location of Claremont, CA
-        // note that this snaps camera to Claremont no matter user's current location - change this later
-        let camera = GMSCameraPosition.camera(withLatitude: 34.1, longitude: -117.7, zoom: 12.0)
+    }
+    
+    /// Gets the user's real current location
+    func getCurrLocation() {
         
-        self.googleMaps.camera = camera
-        self.googleMaps.delegate = self
-        self.googleMaps?.isMyLocationEnabled = true
-        self.googleMaps.settings.myLocationButton = true
-        self.googleMaps.settings.compassButton = true
-        self.googleMaps.settings.zoomGestures = true
+        // get user auth to collect location data
+        self.locationManager.requestAlwaysAuthorization()
+        self.locationManager.requestWhenInUseAuthorization()
         
-        startLocation.placeholder = "Start Location"
-        startLocation.textColor = UIColor.lightGray
+        // show user location if auth provided
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.delegate = self
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.startUpdatingLocation()
+            locationManager.startMonitoringSignificantLocationChanges()
+        }
         
-        destinationLocation.placeholder = "Destination Location"
-        destinationLocation.textColor = UIColor.lightGray
         
     }
     
@@ -72,18 +64,36 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         marker.map = googleMaps
     }
     
-//    // location manager delegates
-//    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-//        print("Error getting location: \(error)")
-//    }
-//
-//    // location manager delegates continued
-//    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-//        let location = locations.last
-//
-//        let locationClaremont = CLLocation(latitude: 34.1, longitude: -117.7)
-//
-//    }
+
+    // location manager delegates
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Error getting location: \(error)")
+    }
+
+    // location manager delegates continued
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        
+        // user's live location
+        let currLocation = locations.last
+        let userLat = currLocation!.coordinate.latitude
+        let userLong = currLocation!.coordinate.longitude
+        
+        /* NOTE: for this current location to work, go to the menu bar and
+         click Debug > Simulate Location > Add GPX File to Workspace...
+         then pick the oldenborg.gpx file in the directory (or put your own
+         coordinates) */
+        let camera = GMSCameraPosition(latitude: userLat,
+                                       longitude: userLong, zoom: 12)
+        
+        // various google maps preferences
+        self.googleMaps.camera = camera
+        self.googleMaps.delegate = self
+        self.googleMaps.isMyLocationEnabled = true
+        self.googleMaps.settings.myLocationButton = true
+        self.googleMaps.settings.compassButton = true
+        self.googleMaps.settings.zoomGestures = true
+
+    }
     
     // the following functions essentially allow map functionality
     // if you click a point on the map, these functions store the coordinates of that point
@@ -103,27 +113,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         googleMaps.isMyLocationEnabled = true
         return false
     }
-    
-    func mapView(_ mapView: GMSMapView, didTap overlay: GMSOverlay) {
-        if let routePolyline = overlay as? GMSPolyline {
-            if (routePolyline == lastTappedRoutePolyline) {
-                routePolyline.strokeWidth /= 2
-                return
-            }
-            if (lastTappedRoutePolyline.path != nil) {
-                lastTappedRoutePolyline.strokeWidth /= 2
-            }
-            routePolyline.strokeWidth *= 2
-            lastTappedRoutePolyline = routePolyline
-        }
-    }
 
     func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D) {
         print("Coordinate \(coordinate)")
-        if (lastTappedRoutePolyline.path != nil) {
-            lastTappedRoutePolyline.strokeWidth /= 2
-            lastTappedRoutePolyline.path = nil
-        }
     }
     
     func didTapMyLocationButton(for mapView: GMSMapView) -> Bool {
@@ -133,7 +125,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     
-    // when start location is tapped, open search location
+    /// When start location is tapped, open search location
+    /// Note: GMSAutocomplete only shows 5 at a time
+    /// https://stackoverflow.com/questions/31761124/how-to-obtain-more-than-5-results-from-google-maps-places-autocomplete
+    /// - Parameter sender: the location entered by the user
     @IBAction func openStartLocation(_ sender: UITextField) {
         let autoCompleteController = GMSAutocompleteViewController()
         autoCompleteController.delegate = self
@@ -192,9 +187,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         return degrees * Double.pi / 180
     }
     
-    // gets the distance between two GPS coords. unit should be "km" for kilometers, anything else defaults to miles.
-    // https://www.geodatasource.com/developers/swift
+    //gets the distance between two GPS coords. unit should be "km" for kilometers, anything else defaults to miles.
     func getDistanceBetween(startCoordinates: CLLocationCoordinate2D, endCoordinates: CLLocationCoordinate2D, unit: String) -> Double {
+//        https://www.geodatasource.com/developers/swift
         let theta = degreesToRadians(startCoordinates.longitude - endCoordinates.longitude)
         let startLatitudeRad = degreesToRadians(startCoordinates.latitude)
         let endLatitudeRad = degreesToRadians(endCoordinates.latitude)
@@ -207,6 +202,32 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             dist = dist * 1.609344
         }
         return dist
+//        https://community.esri.com/groups/coordinate-reference-systems/blog/2017/10/05/haversine-formula
+//      Coordinates in decimal degrees (e.g. 2.89078, 12.79797)
+//        let lon1 = startCoordinates.longitude
+//        let lat1 = startCoordinates.latitude
+//
+//        let lon2 = endCoordinates.longitude
+//        let lat2 = endCoordinates.latitude
+//
+//        let R = 6371000.0  //radius of Earth in meters
+//        let phi_1 = degreesToRadians(lat1)
+//        let phi_2 = degreesToRadians(lat2)
+//
+//        let delta_phi = degreesToRadians(lat2 - lat1)
+//        let delta_lambda = degreesToRadians(lon2 - lon1)
+//
+//        let a = pow(sin(delta_phi / 2.0), 2) + cos(phi_1) * cos(phi_2) * pow(sin(delta_lambda / 2.0), 2)
+//
+//        let c = 2 * atan2(sqrt(a), sqrt(1 - a))
+//
+//        var meters = R * c  //output distance in meters
+//        var km = meters / 1000.0  // output distance in kilometers
+
+//        meters = round(meters, 3)
+//        km = round(km, 3)
+        
+//        return km
     }
     
     func getMidpoint(startCoordinates: CLLocationCoordinate2D, endCoordinates: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
@@ -253,11 +274,25 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         }
     }
 
+    // https://crime-data-explorer.fr.cloud.gov/api  -- not using this one
     // https://www.crimeometer.com/crime-data-api-documentation
-    //********************* Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 ***********************************
+    
+    /* Ilana's FBI crime api key:
+            69VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO */
+    
+    /* Ilana's restricted crime-o-meter api key:
+            ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 */
+    
     func getCrimesAlongPath(path: GMSPath, startDateTime: String, endDateTime: String, tolerance: Double, units: String) {
+        /*
+        let fbiAPIKey = "069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
+        let endpointFBI = "/api/data/nibrs/aggravated-assault/offense/states/ny/COUNT"
+        let urlStringFBI =
+        "https://api.usa.gov/crime/fbi/sapi/\(endpointFBI)?api_key=069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
+        */
         let crimeOMeterAPIKey = "ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4"
         
+        //is this the correct way to get the start and end coords of the path??
         let startCoordinates = path.coordinate(at: 0)
         let endCoordinates = path.coordinate(at: path.count() - 1)
         
@@ -281,14 +316,20 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 print("error")
             } else {
                 do {
+//                    print("data:")
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+//                    print(json)
+//                    print(json["incidents"])
                     if let incidentsArr = json["incidents"] as? Array<Any> {
                         for incident in incidentsArr {
+//                            print(incident)
                             if let incidentDict = incident as? Dictionary<String, Any> {
+//                                print(incidentDict)
                                 if let incidentLatitude = incidentDict["incident_latitude"] as? Double,
                                     let incidentLongitude = incidentDict["incident_longitude"] as? Double,
                                     let incidentDescription = incidentDict["incident_offense_detail_description"] as? String,
                                     let incidentTitle = incidentDict["incident_offense"] as? String {
+//                                    print(incidentLatitude, incidentLongitude, incidentDescription)
                                     let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
                                     let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
                                     if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, toleranceDist)) {
@@ -339,7 +380,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 let polyline = GMSPolyline.init(path: path)
                                 polyline.strokeWidth = 3
                                 polyline.strokeColor = self.randomColor()
-                                polyline.isTappable = true
 
                                 let bounds = GMSCoordinateBounds(path: path!)
                                 self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
@@ -368,16 +408,62 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.navigationItem.leftBarButtonItem = logoutButton
         self.navigationItem.rightBarButtonItem = profileButton
         
+        /*
         let locationClaremont = CLLocationCoordinate2D(latitude: 34.0967, longitude: -117.7198)
         let locationUpland = CLLocationCoordinate2D(latitude: 34.0975, longitude: -117.76484)
-        drawAllPathsWithCompletion(from: locationClaremont, to: locationUpland) { (routes) in
-            for route in routes {
-                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
-                let points = routeOverviewPolyline.object(forKey: "points")
-                let path = GMSPath.init(fromEncodedPath: points! as! String)
-                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 10, units: "km")
+        let locationDisneyHall = CLLocationCoordinate2D(latitude: 34.0553, longitude: -118.2498)
+        let locationUnionStation = CLLocationCoordinate2D(latitude: 34.0562, longitude: -118.2365)
+        let locationLosAngeles = CLLocationCoordinate2D(latitude: 34.0522, longitude: -118.2437)
+        let locationNewYork = CLLocationCoordinate2D(latitude: 40.7127837, longitude: -74.0059413)
+        
+        drawAllPathsWithCompletion(
+            from: locationClaremont, to: locationUpland) { (routes) in
+                for route in routes {
+                    
+                    let routeOverviewPolyline:NSDictionary = (route as! NSDictionary)
+                            .value(forKey: "overview_polyline") as! NSDictionary
+                    
+                    let points = routeOverviewPolyline.object(forKey: "points")
+                    let path = GMSPath.init(fromEncodedPath: points! as! String)
+                    
+                    self.getCrimesAlongPath(path: path!,
+                                            startDateTime: "2010-08-26T00:00:00.000Z",
+                                            endDateTime: "2019-08-27T00:00:00.000Z",
+                                            tolerance: 10, units: "km")
+                    
+//                TEST CODE
+//                let incidentCoords = CLLocationCoordinate2D(latitude: 34.0811, longitude: -117.7535)
+//                let tolerance = CLLocationDistance(self.getMeters(dist: 10, units: "km"))
+//                print(GMSGeometryIsLocationOnPathTolerance(incidentCoords, path!, true, tolerance))
+                
+//                let startCoordinates = path!.coordinate(at: 0)
+//                let endCoordinates = path!.coordinate(at: path!.count() - 1)
+//
+//                print("start coord:", startCoordinates)
+//                print("end coord:", endCoordinates)
+//
+//                let midpoint = self.getMidpoint(startCoordinates: startCoordinates, endCoordinates: endCoordinates)
+//                print("midpoint:", midpoint.latitude, midpoint.longitude)
+//                let radius = self.getDistanceBetween(startCoordinates: midpoint, endCoordinates: endCoordinates, unit: "km")
+//                print("radius", radius, "km")
+//                let crimeArrCoordsTEST = [CLLocationCoordinate2D(latitude: 34.0821, longitude: -117.7477),
+//                CLLocationCoordinate2D(latitude: 34.0811, longitude: -117.7535),
+//                CLLocationCoordinate2D(latitude: 34.082, longitude: -117.7528),
+//                CLLocationCoordinate2D(latitude: 34.1025, longitude: -117.7246),
+//                CLLocationCoordinate2D(latitude: 34.1005, longitude: -117.7582),
+//                CLLocationCoordinate2D(latitude: 34.0821, longitude: -117.7477),
+//                CLLocationCoordinate2D(latitude: 34.0811, longitude: -117.7535),
+//                CLLocationCoordinate2D(latitude: 34.082, longitude: -117.7528),
+//                CLLocationCoordinate2D(latitude: 34.1025, longitude: -117.7246),
+//                CLLocationCoordinate2D(latitude: 34.1005, longitude: -117.7582),
+//                CLLocationCoordinate2D(latitude: 34.0821, longitude: -117.7477),
+//                CLLocationCoordinate2D(latitude: 34.0811, longitude: -117.7535),
+//                CLLocationCoordinate2D(latitude: 34.082, longitude: -117.7528),
+//                CLLocationCoordinate2D(latitude: 34.1025, longitude: -117.7246),
+//                CLLocationCoordinate2D(latitude: 34.1005, longitude: -117.7582)]
             }
         }
+         */
         
     }
 
@@ -395,17 +481,22 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         let camera = GMSCameraPosition.camera(withLatitude: place.coordinate.latitude, longitude: place.coordinate.longitude, zoom: 16.0)
         
         // default marker title; changes if we select the end location
-        var title = "End Location"
+        var title = "Start Location"
+        
+        // will be the new value of either the start or end location fields
+        let workingLocation = CLLocation(latitude: place.coordinate.latitude,
+                                         longitude: place.coordinate.longitude)
         
         // set the coordinate to the choice
         if locationSelected == .startLocation {
-            locationStart = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
-            title = "Start Location"
+            locationStart = workingLocation
         }
         else {
-            locationEnd = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
+            locationEnd = workingLocation
+            title = "End Location"
         }
         
+        // drop the marker onto the map (delegate to method)
         createMarker(titleMarker: title, latitude: place.coordinate.latitude,
                      longitude: place.coordinate.longitude)
         

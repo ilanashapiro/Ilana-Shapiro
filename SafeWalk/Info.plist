@@ -33,6 +33,13 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+    
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>App uses device location services</string>
+    
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>App uses device location services</string>
+    
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -82,13 +89,5 @@
 		<string>googlechromes</string>
 		<string>comgooglemaps</string>
 	</array>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Need to access your location</string>
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
 </dict>
 </plist>
