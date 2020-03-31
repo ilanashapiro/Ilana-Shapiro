@@ -43,6 +43,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // get my location again
         let myLocation = getCurrLocation()
         startLocation.text = "Your location"
+        if (locationStart != nil) {
+            locationStart.map = nil
+        }
         locationStart = GMSMarker(position: myLocation!.coordinate)
         
         // get the center between the destination and your location. If the
