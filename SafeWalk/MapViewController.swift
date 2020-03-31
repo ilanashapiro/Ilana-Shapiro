@@ -28,6 +28,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     var locationManager = CLLocationManager()
     var locationSelected = Location.startLocation
+    
+    var lastTappedRoutePolyline = GMSPolyline()
   
     /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
@@ -77,7 +79,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         }
         
         return locationManager.location
-        
     }
 
     // location manager delegates
@@ -110,6 +111,20 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
 
     }
     
+    func mapView(_ mapView: GMSMapView, didTap overlay: GMSOverlay) {
+           if let routePolyline = overlay as? GMSPolyline {
+               if (routePolyline == lastTappedRoutePolyline) {
+                   routePolyline.strokeWidth /= 2
+                   return
+               }
+               if (lastTappedRoutePolyline.path != nil) {
+                   lastTappedRoutePolyline.strokeWidth /= 2
+               }
+               routePolyline.strokeWidth *= 2
+               lastTappedRoutePolyline = routePolyline
+           }
+       }
+    
     // the following functions essentially allow map functionality
     // if you click a point on the map, these functions store the coordinates of that point
     func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
@@ -131,6 +146,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
 
     func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D) {
         print("Coordinate \(coordinate)")
+        if (lastTappedRoutePolyline.path != nil) {
+            lastTappedRoutePolyline.strokeWidth /= 2
+            lastTappedRoutePolyline.path = nil
+        }
     }
     
     func didTapMyLocationButton(for mapView: GMSMapView) -> Bool {
@@ -263,25 +282,11 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         }
     }
 
-    // https://crime-data-explorer.fr.cloud.gov/api  -- not using this one
     // https://www.crimeometer.com/crime-data-api-documentation
-    
-    /* Ilana's FBI crime api key:
-            69VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO */
-    
-    /* Ilana's restricted crime-o-meter api key:
-            ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 */
-    
+    // Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4
     func getCrimesAlongPath(path: GMSPath, startDateTime: String, endDateTime: String, tolerance: Double, units: String) {
-        /*
-        let fbiAPIKey = "069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
-        let endpointFBI = "/api/data/nibrs/aggravated-assault/offense/states/ny/COUNT"
-        let urlStringFBI =
-        "https://api.usa.gov/crime/fbi/sapi/\(endpointFBI)?api_key=069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
-        */
         let crimeOMeterAPIKey = "ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4"
         
-        //is this the correct way to get the start and end coords of the path??
         let startCoordinates = path.coordinate(at: 0)
         let endCoordinates = path.coordinate(at: path.count() - 1)
         
@@ -301,20 +306,14 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 print("error")
             } else {
                 do {
-//                    print("data:")
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
-//                    print(json)
-//                    print(json["incidents"])
                     if let incidentsArr = json["incidents"] as? Array<Any> {
                         for incident in incidentsArr {
-//                            print(incident)
                             if let incidentDict = incident as? Dictionary<String, Any> {
-//                                print(incidentDict)
                                 if let incidentLatitude = incidentDict["incident_latitude"] as? Double,
                                     let incidentLongitude = incidentDict["incident_longitude"] as? Double,
                                     let incidentDescription = incidentDict["incident_offense_detail_description"] as? String,
                                     let incidentTitle = incidentDict["incident_offense"] as? String {
-//                                    print(incidentLatitude, incidentLongitude, incidentDescription)
                                     let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
                                     let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
                                     if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, toleranceDist)) {
@@ -363,6 +362,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 let polyline = GMSPolyline.init(path: path)
                                 polyline.strokeWidth = 3
                                 polyline.strokeColor = self.randomColor()
+                                 polyline.isTappable = true
 
                                 let bounds = GMSCoordinateBounds(path: path!)
                                 self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
@@ -391,15 +391,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.navigationItem.leftBarButtonItem = logoutButton
         self.navigationItem.rightBarButtonItem = profileButton
         
-        
         let locationClaremont = CLLocationCoordinate2D(latitude: 34.0967, longitude: -117.7198)
         let locationUpland = CLLocationCoordinate2D(latitude: 34.0975, longitude: -117.76484)
         drawAllPathsWithCompletion(from: locationClaremont, to: locationUpland) { (routes) in
+            print("NUMROUTES", routes.count)
             for route in routes {
                 let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
                 let points = routeOverviewPolyline.object(forKey: "points")
                 let path = GMSPath.init(fromEncodedPath: points! as! String)
-//                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 10, units: "km")
+                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 2, units: "km")
         
             }
         }
