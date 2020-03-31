@@ -261,12 +261,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let startCoordinates = path.coordinate(at: 0)
         let endCoordinates = path.coordinate(at: path.count() - 1)
         
-        print("start coord:", startCoordinates)
-        print("end coord:", endCoordinates)
         let midpoint = getMidpoint(startCoordinates: startCoordinates, endCoordinates: endCoordinates)
-        print("midpoint:", midpoint.latitude, midpoint.longitude)
         let radius = getDistanceBetween(startCoordinates: midpoint, endCoordinates: endCoordinates, unit: units)
-        print("radius", radius, units)
         let urlString = "https://api.crimeometer.com/v1/incidents/raw-data?lat=\(midpoint.latitude)&lon=\(midpoint.longitude)&distance=\(radius)\(units)&datetime_ini=\(startDateTime)&datetime_end=\(endDateTime)&page=1"
 
         let url = URL(string: urlString)
@@ -319,16 +315,14 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let apiKey = appDelegate.MAPS_API_KEY
         //https://developers.google.com/maps/documentation/directions/intro
         let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=walking&alternatives=true&key=\(apiKey)"
-        print(urlString)
         let url = URL(string: urlString)
         URLSession.shared.dataTask(with: url!, completionHandler: {
             (data, response, error) in
             if (error != nil) {
-                print("error")
+                print("error in getting paths!", error?.localizedDescription)
             } else {
                 do {
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
-                    print(json)
                     if let routes = json["routes"] as? [[String:Any]] {
                         DispatchQueue.main.async {
                             self.googleMaps.clear()
@@ -375,7 +369,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
                 let points = routeOverviewPolyline.object(forKey: "points")
                 let path = GMSPath.init(fromEncodedPath: points! as! String)
-                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 10, units: "km")
+//                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 10, units: "km")
             }
         }
         
