@@ -21,69 +21,94 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBOutlet weak var googleMaps: GMSMapView!
     @IBOutlet weak var startLocation: UITextField!
     @IBOutlet weak var destinationLocation: UITextField!
+    @IBOutlet weak var currentToOrigin: UIButton!
     
+    var locationStart: GMSMarker!
+    var locationEnd: GMSMarker!
     
     var locationManager = CLLocationManager()
     var locationSelected = Location.startLocation
   
-    var locationStart = CLLocation()
-    var locationEnd = CLLocation()
-    
-    var lastTappedRoutePolyline = GMSPolyline()
-  
-    // creates the page that is shown when loaded - contains map and search bars
+    /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
         super.viewDidLoad()
-      
-        locationManager = CLLocationManager()
-        locationManager.delegate = self
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.startMonitoringSignificantLocationChanges()
+        let _ = getCurrLocation()
         
+    }
+    
+    /// Sets the current location to the starting location
+    /// - Parameter sender: the "mylocation" button clicked
+    @IBAction func myLocationUsed(_ sender: UIButton) {
         
-        // create a GMSCameraPosition that tells the map to display the coordinate location of Claremont, CA
-        // note that this snaps camera to Claremont no matter user's current location - change this later
-        let camera = GMSCameraPosition.camera(withLatitude: 34.1, longitude: -117.7, zoom: 12.0)
+        // get my location again
+        let myLocation = getCurrLocation()
+        startLocation.text = "Your location"
+        if (locationStart != nil) {
+            locationStart.map = nil
+        }
+        locationStart = GMSMarker(position: myLocation!.coordinate)
         
+        // get the center between the destination and your location. If the
+        // destination was not yet selected, then just use current location
+        let endCoordinates = (locationEnd != nil) ?
+                        locationEnd.position :
+                        myLocation!.coordinate
+        let center = getMidpoint(startCoordinates: myLocation!.coordinate,
+                                 endCoordinates: endCoordinates)
+        
+        // put the marker on the map
+        createMarker(marker: locationStart, center: center)
+    }
+    
+    
+    /// Gets the user's real current location
+    func getCurrLocation() -> CLLocation! {
+        
+        // get user auth to collect location data
+        self.locationManager.requestWhenInUseAuthorization()
+        self.locationManager.requestAlwaysAuthorization()
+        
+        // show user location if auth provided
+        if CLLocationManager.locationServicesEnabled() {
+            locationManager.delegate = self
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+            locationManager.startUpdatingLocation()
+            locationManager.startMonitoringSignificantLocationChanges()
+        }
+        
+        return locationManager.location
+        
+    }
+
+    // location manager delegates
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Error getting location: \(error)")
+    }
+
+    // location manager delegates continued
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        
+        // user's live location
+        let currLocation = locations.last
+        let userLat = currLocation!.coordinate.latitude
+        let userLong = currLocation!.coordinate.longitude
+        
+        /* NOTE: for this current location to work, go to the menu bar and
+         click Debug > Simulate Location > Add GPX File to Workspace...
+         then pick the oldenborg.gpx file in the directory (or put your own
+         coordinates) */
+        let camera = GMSCameraPosition(latitude: userLat,
+                                       longitude: userLong, zoom: 12)
+        
+        // various google maps preferences
         self.googleMaps.camera = camera
         self.googleMaps.delegate = self
-        self.googleMaps?.isMyLocationEnabled = true
+        self.googleMaps.isMyLocationEnabled = true
         self.googleMaps.settings.myLocationButton = true
         self.googleMaps.settings.compassButton = true
         self.googleMaps.settings.zoomGestures = true
-        
-        startLocation.placeholder = "Start Location"
-        startLocation.textColor = UIColor.lightGray
-        
-        destinationLocation.placeholder = "Destination Location"
-        destinationLocation.textColor = UIColor.lightGray
-        
+
     }
-    
-    // a function that can create markers on the map
-    func createMarker(titleMarker: String, latitude: CLLocationDegrees,
-                      longitude: CLLocationDegrees) {
-        let marker = GMSMarker()
-        marker.position = CLLocationCoordinate2DMake(latitude, longitude)
-        marker.title = titleMarker
-        marker.icon = GMSMarker.markerImage(with: .red)
-        marker.map = googleMaps
-    }
-    
-//    // location manager delegates
-//    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-//        print("Error getting location: \(error)")
-//    }
-//
-//    // location manager delegates continued
-//    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-//        let location = locations.last
-//
-//        let locationClaremont = CLLocation(latitude: 34.1, longitude: -117.7)
-//
-//    }
     
     // the following functions essentially allow map functionality
     // if you click a point on the map, these functions store the coordinates of that point
@@ -103,27 +128,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         googleMaps.isMyLocationEnabled = true
         return false
     }
-    
-    func mapView(_ mapView: GMSMapView, didTap overlay: GMSOverlay) {
-        if let routePolyline = overlay as? GMSPolyline {
-            if (routePolyline == lastTappedRoutePolyline) {
-                routePolyline.strokeWidth /= 2
-                return
-            }
-            if (lastTappedRoutePolyline.path != nil) {
-                lastTappedRoutePolyline.strokeWidth /= 2
-            }
-            routePolyline.strokeWidth *= 2
-            lastTappedRoutePolyline = routePolyline
-        }
-    }
 
     func mapView(_ mapView: GMSMapView, didTapAt coordinate: CLLocationCoordinate2D) {
         print("Coordinate \(coordinate)")
-        if (lastTappedRoutePolyline.path != nil) {
-            lastTappedRoutePolyline.strokeWidth /= 2
-            lastTappedRoutePolyline.path = nil
-        }
     }
     
     func didTapMyLocationButton(for mapView: GMSMapView) -> Bool {
@@ -133,7 +140,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     
-    // when start location is tapped, open search location
+    /// When start location is tapped, open search location
+    /// Note: GMSAutocomplete only shows 5 at a time
+    /// https://stackoverflow.com/questions/31761124/how-to-obtain-more-than-5-results-from-google-maps-places-autocomplete
+    /// - Parameter sender: the location entered by the user
     @IBAction func openStartLocation(_ sender: UITextField) {
         let autoCompleteController = GMSAutocompleteViewController()
         autoCompleteController.delegate = self
@@ -146,7 +156,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         self.locationManager.stopUpdatingLocation()
         self.present(autoCompleteController, animated: true, completion: nil)
-        
     }
     
     
@@ -195,6 +204,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     // gets the distance between two GPS coords. unit should be "km" for kilometers, anything else defaults to miles.
     // https://www.geodatasource.com/developers/swift
     func getDistanceBetween(startCoordinates: CLLocationCoordinate2D, endCoordinates: CLLocationCoordinate2D, unit: String) -> Double {
+
         let theta = degreesToRadians(startCoordinates.longitude - endCoordinates.longitude)
         let startLatitudeRad = degreesToRadians(startCoordinates.latitude)
         let endLatitudeRad = degreesToRadians(endCoordinates.latitude)
@@ -253,11 +263,25 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         }
     }
 
+    // https://crime-data-explorer.fr.cloud.gov/api  -- not using this one
     // https://www.crimeometer.com/crime-data-api-documentation
-    //********************* Ilana's restricted crime-o-meter api key: ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 ***********************************
+    
+    /* Ilana's FBI crime api key:
+            69VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO */
+    
+    /* Ilana's restricted crime-o-meter api key:
+            ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4 */
+    
     func getCrimesAlongPath(path: GMSPath, startDateTime: String, endDateTime: String, tolerance: Double, units: String) {
+        /*
+        let fbiAPIKey = "069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
+        let endpointFBI = "/api/data/nibrs/aggravated-assault/offense/states/ny/COUNT"
+        let urlStringFBI =
+        "https://api.usa.gov/crime/fbi/sapi/\(endpointFBI)?api_key=069VFLk70Nk35Rq03GO9M3k8zB6vDvjpGtnWAywO"
+        */
         let crimeOMeterAPIKey = "ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4"
         
+        //is this the correct way to get the start and end coords of the path??
         let startCoordinates = path.coordinate(at: 0)
         let endCoordinates = path.coordinate(at: path.count() - 1)
         
@@ -277,14 +301,20 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 print("error")
             } else {
                 do {
+//                    print("data:")
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+//                    print(json)
+//                    print(json["incidents"])
                     if let incidentsArr = json["incidents"] as? Array<Any> {
                         for incident in incidentsArr {
+//                            print(incident)
                             if let incidentDict = incident as? Dictionary<String, Any> {
+//                                print(incidentDict)
                                 if let incidentLatitude = incidentDict["incident_latitude"] as? Double,
                                     let incidentLongitude = incidentDict["incident_longitude"] as? Double,
                                     let incidentDescription = incidentDict["incident_offense_detail_description"] as? String,
                                     let incidentTitle = incidentDict["incident_offense"] as? String {
+//                                    print(incidentLatitude, incidentLongitude, incidentDescription)
                                     let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
                                     let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
                                     if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, toleranceDist)) {
@@ -333,7 +363,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 let polyline = GMSPolyline.init(path: path)
                                 polyline.strokeWidth = 3
                                 polyline.strokeColor = self.randomColor()
-                                polyline.isTappable = true
 
                                 let bounds = GMSCoordinateBounds(path: path!)
                                 self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
@@ -362,6 +391,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.navigationItem.leftBarButtonItem = logoutButton
         self.navigationItem.rightBarButtonItem = profileButton
         
+        
         let locationClaremont = CLLocationCoordinate2D(latitude: 34.0967, longitude: -117.7198)
         let locationUpland = CLLocationCoordinate2D(latitude: 34.0975, longitude: -117.76484)
         drawAllPathsWithCompletion(from: locationClaremont, to: locationUpland) { (routes) in
@@ -370,11 +400,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 let points = routeOverviewPolyline.object(forKey: "points")
                 let path = GMSPath.init(fromEncodedPath: points! as! String)
 //                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 10, units: "km")
+        
             }
         }
-        
     }
-
 }
 
 // GMS Auto Complete Delegate for autocomplete search location
@@ -385,30 +414,85 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
     
     func viewController(_ mapViewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
         
-        // change map location
-        let camera = GMSCameraPosition.camera(withLatitude: place.coordinate.latitude, longitude: place.coordinate.longitude, zoom: 16.0)
+        // the location the user just selected
+        let placeCoord = place.coordinate
+        let workingLocation = CLLocation(latitude: placeCoord.latitude,
+                                         longitude: placeCoord.longitude)
         
-        // default marker title; changes if we select the end location
-        var title = "End Location"
+        // to be the camera's center; will change if both a start and end
+        // location were selected already
+        var center = place.coordinate
         
-        // set the coordinate to the choice
-        if locationSelected == .startLocation {
-            locationStart = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
-            title = "Start Location"
+        // the marker to drop on the map
+        var marker: GMSMarker!
+        
+        // cases for camera zoom depending on if start or end was just specified
+        switch locationSelected {
+        case .startLocation:
+            
+            // overwrite existing start marker
+            if (locationStart != nil) {
+                locationStart.map = nil
+            }
+            
+            // update the start location
+            locationStart = GMSMarker(position: workingLocation.coordinate)
+            marker = locationStart
+            
+            // if an end location was also previously selected then get the
+            // midpoint of the selected location and end destination
+            if (locationEnd != nil) {
+                center = getMidpoint(startCoordinates: placeCoord,
+                                     endCoordinates: locationEnd.position)
+            }
+            
+            startLocation.text = place.name
+            
+        case .destinationLocation:
+            
+            // overwrite existing end marker
+            if (locationEnd != nil) {
+                locationEnd.map = nil
+            }
+            
+            // update the end location
+            locationEnd = GMSMarker(position: workingLocation.coordinate)
+            marker = locationEnd
+            
+            // if an start location was also previously selected then get the
+            // midpoint of the selected location and start destination
+            if (locationStart != nil) {
+                center = getMidpoint(startCoordinates: placeCoord,
+                                     endCoordinates: locationStart.position)
+            }
+            
+            destinationLocation.text = place.name
+        
         }
-        else {
-            locationEnd = CLLocation(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude)
-        }
         
-        createMarker(titleMarker: title, latitude: place.coordinate.latitude,
-                     longitude: place.coordinate.longitude)
-        
-        self.googleMaps.camera = camera
+        // drop the marker onto the map (delegate to method)
+        createMarker(marker: marker, center: center)
         self.dismiss(animated: true, completion: nil)
     }
     
     func wasCancelled(_ mapViewController: GMSAutocompleteViewController) {
         self.dismiss(animated: true, completion: nil)
+    }
+    
+    /// A function that changes the style of markers and places them on the map
+    /// - Parameters:
+    ///   - marker: the marker to place and edit
+    ///   - center: the center around which the app zooms
+    func createMarker(marker: GMSMarker, center: CLLocationCoordinate2D) {
+        
+        // change map location based on the dropped marker(s)
+        let coord1 = (locationStart == nil) ? center : locationStart.position
+        let coord2 = (locationEnd == nil) ? center : locationEnd.position
+        let bounds = GMSCoordinateBounds(coordinate: coord1, coordinate: coord2)
+        self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 100.0))
+        
+        marker.icon = GMSMarker.markerImage(with: (marker == locationStart) ? .red : .blue)
+        marker.map = googleMaps
     }
     
 }
