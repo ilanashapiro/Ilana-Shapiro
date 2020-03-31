@@ -195,6 +195,9 @@
                                 <rect key="frame" x="354" y="658" width="42" height="42"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" image="myLocation"/>
+                                <connections>
+                                    <action selector="myLocationUsed:" destination="l2D-4s-Yp9" eventType="touchUpInside" id="pBG-Yq-tDz"/>
+                                </connections>
                             </button>
                             <textField opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Start Location" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="w1V-Fw-3ft">
                                 <rect key="frame" x="20" y="662" width="325" height="34"/>

@@ -32,22 +32,38 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        getCurrLocation()
+        let _ = getCurrLocation()
         
     }
     
     /// Sets the current location to the starting location
-    func setCurrentToStart() {
-        //TODO
+    /// - Parameter sender: the "mylocation" button clicked
+    @IBAction func myLocationUsed(_ sender: UIButton) {
+        
+        // get my location again
+        let myLocation = getCurrLocation()
+        startLocation.text = "Your location"
+        locationStart = GMSMarker(position: myLocation!.coordinate)
+        
+        // get the center between the destination and your location. If the
+        // destination was not yet selected, then just use current location
+        let endCoordinates = (locationEnd != nil) ?
+                        locationEnd.position :
+                        myLocation!.coordinate
+        let center = getMidpoint(startCoordinates: myLocation!.coordinate,
+                                 endCoordinates: endCoordinates)
+        
+        // put the marker on the map
+        createMarker(marker: locationStart, center: center)
     }
     
+    
     /// Gets the user's real current location
-    func getCurrLocation() {
+    func getCurrLocation() -> CLLocation! {
         
         // get user auth to collect location data
-        self.locationManager.requestAlwaysAuthorization()
         self.locationManager.requestWhenInUseAuthorization()
+        self.locationManager.requestAlwaysAuthorization()
         
         // show user location if auth provided
         if CLLocationManager.locationServicesEnabled() {
@@ -57,6 +73,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             locationManager.startMonitoringSignificantLocationChanges()
         }
         
+        return locationManager.location
         
     }
 
