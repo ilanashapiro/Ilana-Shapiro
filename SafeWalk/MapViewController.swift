@@ -106,10 +106,24 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
                 let points = routeOverviewPolyline.object(forKey: "points")
                 let path = GMSPath.init(fromEncodedPath: points! as! String)
-
-                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2020-04-01T00:00:00.000Z", tolerance: 20, units: "km")
+                
+                self.getCrimesInPastYear(path: path!, tolerance: 1, units: "km")
             }
         }
+    }
+    
+    func getCrimesInPastYear(path:GMSPath, tolerance:Double, units:String) {
+        let dateFormatter : DateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" //2017-04-01T18:05:00.000
+        
+        let currentDate = Date()
+        let currentDateString  = dateFormatter.string(from: currentDate)
+        
+        let calendar = Calendar.current
+        let yearAgoDate = calendar.date(byAdding: .year, value: -1, to: currentDate)
+        let yearAgoDateString  = dateFormatter.string(from: yearAgoDate!)
+        
+        self.getCrimesAlongPath(path: path, startDateTime: yearAgoDateString, endDateTime: currentDateString, tolerance: 1, units: "km")
     }
   
     /// Creates the page that is shown when loaded; contains map and search bars
@@ -317,7 +331,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 getPathButton.isHidden = true
                 
                 nextDirectionTextView.isHidden = true
-                exitRouteButton.isHidden = true
+                exitRouteButton.isHidden = false
                 directionsListButton.isHidden = true
                 
                 pathSelectInstructionsLabel.isHidden = false
@@ -457,22 +471,23 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 do {
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
                     if let incidentsArr = json["incidents"] as? Array<Any> {
+                        print("NUMINCIDENTS", incidentsArr.count)
                         for incident in incidentsArr {
                             if let incidentDict = incident as? Dictionary<String, Any> {
-                                if let incidentLatitude = incidentDict["incident_latitude"] as? Double,
-                                    let incidentLongitude = incidentDict["incident_longitude"] as? Double,
-                                    let incidentDescription = incidentDict["incident_offense_detail_description"] as? String,
-                                    let incidentTime = incidentDict["incident_date "] as? String,
-                                    let incidentTitle = incidentDict["incident_offense"] as? String {
-                                    let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
-                                    let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
-                                    if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, toleranceDist)) {
-                                        DispatchQueue.main.async {
-                                            let marker = GMSMarker(position: incidentCoords)
-                                            marker.title = incidentTitle
-                                            marker.snippet = incidentTime + ":" + incidentDescription
-                                            marker.map = self.googleMaps
-                                        }
+                                let incidentLatitude = incidentDict["incident_latitude"] as! Double
+                                let incidentLongitude = incidentDict["incident_longitude"] as! Double
+                                let incidentDescription = incidentDict["incident_offense_detail_description"] as! String
+                                let incidentTime = incidentDict["incident_date"] as! String
+                                let incidentTitle = incidentDict["incident_offense"] as! String
+                                let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
+                                let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
+                                if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, toleranceDist)) {
+                                    DispatchQueue.main.async {
+                                        let marker = GMSMarker(position: incidentCoords)
+                                        marker.title = incidentTitle
+                                        marker.snippet = incidentTime + ":" + incidentDescription
+                                        marker.snippet = incidentDescription
+                                        marker.map = self.googleMaps
                                     }
                                 }
                             }

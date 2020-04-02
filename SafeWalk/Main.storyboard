@@ -277,8 +277,9 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dOJ-uR-KwZ">
-                                <rect key="frame" x="168" y="766" width="78" height="30"/>
+                                <rect key="frame" x="238" y="760" width="122" height="42"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="25"/>
                                 <state key="normal" title="Select Path"/>
                                 <connections>
                                     <action selector="didTapSelectPath:" destination="l2D-4s-Yp9" eventType="touchUpInside" id="2Mr-pV-wqS"/>
