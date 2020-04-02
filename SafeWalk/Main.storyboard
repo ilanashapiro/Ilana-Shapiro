@@ -268,6 +268,22 @@
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YTh-ND-TRh">
+                                <rect key="frame" x="58" y="665" width="336" height="93"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <string key="text">Tap on route on map to make selection (you can tap on different ones to view). After you made your selection, press the select path button.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dOJ-uR-KwZ">
+                                <rect key="frame" x="168" y="766" width="78" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Select Path"/>
+                                <connections>
+                                    <action selector="didTapSelectPath:" destination="l2D-4s-Yp9" eventType="touchUpInside" id="2Mr-pV-wqS"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="ax1-Ig-gqs"/>
@@ -278,11 +294,13 @@
                     <connections>
                         <outlet property="currentToOrigin" destination="eb0-hU-u5j" id="T9q-KC-Y8U"/>
                         <outlet property="destinationLocationTextField" destination="l85-08-JDz" id="m0P-Dy-haK"/>
-                        <outlet property="directionsListButton" destination="HDD-Lz-kfM" id="FqA-jm-ril"/>
+                        <outlet property="directionsListButton" destination="HDD-Lz-kfM" id="AFi-Nl-ZK7"/>
                         <outlet property="exitRouteButton" destination="uAu-aP-eNd" id="WJ9-N6-pfP"/>
-                        <outlet property="getPathButton" destination="bt2-dr-89v" id="rKO-fv-SpY"/>
+                        <outlet property="getPathButton" destination="bt2-dr-89v" id="dWq-I9-arh"/>
                         <outlet property="googleMaps" destination="78w-el-5kH" id="hcq-m5-LT7"/>
                         <outlet property="nextDirectionTextView" destination="eep-D8-Ohe" id="BTT-Jc-fLv"/>
+                        <outlet property="pathSelectInstructionsLabel" destination="YTh-ND-TRh" id="SFI-Gs-MEg"/>
+                        <outlet property="selectPathButton" destination="dOJ-uR-KwZ" id="L0a-LZ-mLV"/>
                         <outlet property="startLocationTextField" destination="w1V-Fw-3ft" id="bgp-LT-T2d"/>
                         <segue destination="ZGf-uB-UWq" kind="show" identifier="welcomeSegue" id="Dnh-KM-ihf"/>
                         <segue destination="eqP-s3-mgC" kind="show" identifier="profileSegue" id="txd-Qm-kNl"/>
