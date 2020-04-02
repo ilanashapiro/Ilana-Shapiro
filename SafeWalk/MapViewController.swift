@@ -19,9 +19,16 @@ enum Location {
 class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManagerDelegate {
 
     @IBOutlet weak var googleMaps: GMSMapView!
-    @IBOutlet weak var startLocation: UITextField!
-    @IBOutlet weak var destinationLocation: UITextField!
+    @IBOutlet weak var startLocationTextField: UITextField!
+    @IBOutlet weak var destinationLocationTextField: UITextField!
+    @IBOutlet weak var getPathButton: UIButton!
     @IBOutlet weak var currentToOrigin: UIButton!
+    @IBOutlet weak var nextDirectionTextView: UITextView!
+    @IBOutlet weak var exitRouteButton: UIButton!
+    @IBOutlet weak var directionsListButton: UIButton!
+    
+    var selectedStartLocation = CLLocationCoordinate2D()
+    var selectedDestinationLocation = CLLocationCoordinate2D()
     
     var locationStart: GMSMarker!
     var locationEnd: GMSMarker!
@@ -30,12 +37,53 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     var locationSelected = Location.startLocation
     
     var lastTappedRoutePolyline = GMSPolyline()
+    var directionsList = [[(description: String, endLocation: CLLocationCoordinate2D)]]()
+    
+    @IBAction func didTapExitRoute(_ sender: Any) {
+        googleMaps.clear()
+        setUIOnOffRoute(isOnRoute: false)
+        selectedStartLocation.latitude = 0.0
+        selectedDestinationLocation.latitude = 0.0
+        startLocationTextField.text = ""
+        destinationLocationTextField.text = ""
+    }
+    @IBAction func didTapDirectionsList(_ sender: Any) {
+    }
+    
+    @IBAction func didTapGetPath(_ sender: Any) {
+        if (selectedStartLocation.latitude == 0.0 || selectedDestinationLocation.latitude == 0.0) {
+            let alert = UIAlertController(title: "Please enter both a start and end destination", message: nil, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+            self.present(alert, animated: true)
+            return
+        }
+        
+        setUIOnOffRoute(isOnRoute: true)
+        
+        drawAllPathsWithCompletion(from: selectedStartLocation, to: selectedDestinationLocation) { (routes) in
+            for route in routes {
+                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                let points = routeOverviewPolyline.object(forKey: "points")
+                let path = GMSPath.init(fromEncodedPath: points! as! String)
+                
+                //THIS IS JUST A TES NORMALLY THE USER NEEDS TO SELECT A PATH BEFORE THIS GETS DISPLAYED
+                //THERE SHOULD BE AN INTERMEDIATE UI FOR THE PATH SELECTION STAGE
+                if (self.directionsList.count > 0) {
+                    self.nextDirectionTextView.text = self.directionsList[0].description.htmlToString
+                    
+                    //NEED TO MAKE IT SO THE NEXT DIRECTION UPDATES WHEN THE USER PASSES GETS TO THE END LOCATION OF THIS LEG (STORED AS SECOND TUPLE VAL IN THE DIRECTIONSLIST ARRAY) VIA GPS. THIS ISN'T HANDLED HERE THIS IS JUST SETUP.
+                }
+//                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2021-01-01T00:00:00.000Z", tolerance: 2, units: "km")
+            }
+        }
+    }
   
     /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
         super.viewDidLoad()
-        let _ = getCurrLocation()
-        
+        getCurrLocation()
+        setUIOnOffRoute(isOnRoute: false)
+        nextDirectionTextView.isEditable = false
     }
     
     /// Sets the current location to the starting location
@@ -44,7 +92,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         // get my location again
         let myLocation = getCurrLocation()
-        startLocation.text = "Your location"
+        startLocationTextField.text = "Your location"
         if (locationStart != nil) {
             locationStart.map = nil
         }
@@ -212,6 +260,16 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         performSegue(withIdentifier: "profileSegue", sender: self)
     }
     
+    func setUIOnOffRoute(isOnRoute:Bool) {
+           startLocationTextField.isHidden = isOnRoute
+           destinationLocationTextField.isHidden = isOnRoute
+           currentToOrigin.isHidden = isOnRoute
+           getPathButton.isHidden = isOnRoute
+           nextDirectionTextView.isHidden = !isOnRoute
+           exitRouteButton.isHidden = !isOnRoute
+           directionsListButton.isHidden = !isOnRoute
+    }
+    
     func radiansToDegrees(_ radians: Double) -> Double {
         return radians * 180.0 / Double.pi
     }
@@ -313,6 +371,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 if let incidentLatitude = incidentDict["incident_latitude"] as? Double,
                                     let incidentLongitude = incidentDict["incident_longitude"] as? Double,
                                     let incidentDescription = incidentDict["incident_offense_detail_description"] as? String,
+                                    let incidentTime = incidentDict["incident_date "] as? String,
                                     let incidentTitle = incidentDict["incident_offense"] as? String {
                                     let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
                                     let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
@@ -320,7 +379,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                         DispatchQueue.main.async {
                                             let marker = GMSMarker(position: incidentCoords)
                                             marker.title = incidentTitle
-                                            marker.snippet = incidentDescription
+                                            marker.snippet = incidentTime + ":" + incidentDescription
                                             marker.map = self.googleMaps
                                         }
                                     }
@@ -352,23 +411,43 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             } else {
                 do {
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
-                    if let routes = json["routes"] as? [[String:Any]] {
-                        DispatchQueue.main.async {
-                            self.googleMaps.clear()
-                            for route in routes {
-                                let routeOverviewPolyline:NSDictionary = (route as NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
-                                let points = routeOverviewPolyline.object(forKey: "points")
-                                let path = GMSPath.init(fromEncodedPath: points! as! String)
-                                let polyline = GMSPolyline.init(path: path)
-                                polyline.strokeWidth = 3
-                                polyline.strokeColor = self.randomColor()
-                                 polyline.isTappable = true
-
-                                let bounds = GMSCoordinateBounds(path: path!)
-                                self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
-
-                                polyline.map = self.googleMaps
+                    let routes = json["routes"] as! [[String:Any]]
+                    DispatchQueue.main.async {
+                        self.googleMaps.clear()
+                        var currentDirections = [(description: String, endLocation: CLLocationCoordinate2D)]()
+                        for route in routes {
+                            currentDirections = []
+                            let legs:[[String:Any]] = (route as NSDictionary).value(forKey: "legs") as! [[String:Any]]
+                            for leg in legs {
+                                let steps:[[String:Any]] = (leg as NSDictionary).value(forKey: "steps") as! [[String:Any]]
+                                for step in steps {
+                                    let htmlDirections:String = (step as NSDictionary).value(forKey: "html_instructions") as! String
+                                    
+                                    let distanceInfo:NSDictionary = (step as NSDictionary).value(forKey: "distance") as! NSDictionary
+                                    let distanceDescription:String = distanceInfo.value(forKey: "text") as! String
+                                    
+                                    let endLocationInfo:NSDictionary = (step as NSDictionary).value(forKey: "end_location") as! NSDictionary
+                                    let lat:Double = endLocationInfo.value(forKey: "lat") as! Double
+                                    let lng:Double = endLocationInfo.value(forKey: "lat") as! Double
+                                    let coords = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+                                    
+                                    currentDirections.append((description: htmlDirections + " for " + distanceDescription, endLocation: coords))
+                                }
                             }
+                            self.directionsList.append(currentDirections)
+                            
+                            let routeOverviewPolyline:NSDictionary = (route as NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                            let points = routeOverviewPolyline.object(forKey: "points")
+                            let path = GMSPath.init(fromEncodedPath: points! as! String)
+                            let polyline = GMSPolyline.init(path: path)
+                            polyline.strokeWidth = 3
+                            polyline.strokeColor = self.randomColor()
+                            polyline.isTappable = true
+
+                            let bounds = GMSCoordinateBounds(path: path!)
+                            self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
+
+                            polyline.map = self.googleMaps
                         }
                         completion(routes)
                     }
@@ -388,21 +467,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // navigation buttons on the map view controller
         let logoutButton = UIBarButtonItem(title: "Logout", style: UIBarButtonItem.Style.plain, target: self, action: #selector(logout))
         let profileButton = UIBarButtonItem(title: "Go to Profile", style: UIBarButtonItem.Style.plain, target: self, action:#selector(profileButtonTapped))
-        self.navigationItem.leftBarButtonItem = logoutButton
-        self.navigationItem.rightBarButtonItem = profileButton
-        
-        let locationClaremont = CLLocationCoordinate2D(latitude: 34.0967, longitude: -117.7198)
-        let locationUpland = CLLocationCoordinate2D(latitude: 34.0975, longitude: -117.76484)
-        drawAllPathsWithCompletion(from: locationClaremont, to: locationUpland) { (routes) in
-            print("NUMROUTES", routes.count)
-            for route in routes {
-                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
-                let points = routeOverviewPolyline.object(forKey: "points")
-                let path = GMSPath.init(fromEncodedPath: points! as! String)
-                self.getCrimesAlongPath(path: path!, startDateTime: "2010-08-26T00:00:00.000Z", endDateTime: "2019-08-27T00:00:00.000Z", tolerance: 2, units: "km")
-        
-            }
-        }
+        navigationItem.leftBarButtonItem = logoutButton
+        navigationItem.rightBarButtonItem = profileButton
     }
 }
 
@@ -429,6 +495,7 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         // cases for camera zoom depending on if start or end was just specified
         switch locationSelected {
         case .startLocation:
+            selectedStartLocation = placeCoord
             
             // overwrite existing start marker
             if (locationStart != nil) {
@@ -446,10 +513,10 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
                                      endCoordinates: locationEnd.position)
             }
             
-            startLocation.text = place.name
+            startLocationTextField.text = place.name
             
         case .destinationLocation:
-            
+            selectedDestinationLocation = placeCoord
             // overwrite existing end marker
             if (locationEnd != nil) {
                 locationEnd.map = nil
@@ -466,7 +533,7 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
                                      endCoordinates: locationStart.position)
             }
             
-            destinationLocation.text = place.name
+            destinationLocationTextField.text = place.name
         
         }
         
@@ -494,7 +561,21 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         marker.icon = GMSMarker.markerImage(with: (marker == locationStart) ? .red : .blue)
         marker.map = googleMaps
     }
-    
+}
+
+extension String {
+    // https://stackoverflow.com/questions/37048759/swift-display-html-data-in-a-label-or-textview
+    var htmlToAttributedString: NSAttributedString? {
+        guard let data = data(using: .utf8) else { return NSAttributedString() }
+        do {
+            return try NSAttributedString(data: data, options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding:String.Encoding.utf8.rawValue], documentAttributes: nil)
+        } catch {
+            return NSAttributedString()
+        }
+    }
+    var htmlToString: String {
+        return htmlToAttributedString?.string ?? ""
+    }
 }
 
 extension UISearchBar {
