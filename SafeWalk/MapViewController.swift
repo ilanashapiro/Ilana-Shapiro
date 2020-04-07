@@ -48,6 +48,11 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     var lastTappedRoutePolyline = GMSPolyline()
     var chosenRoute = [String:Any]()
     var directionsList = [String]()
+    var polylineList = [GMSPolyline]()
+    
+// code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now. It replaces polylineList in function
+//    var markersPerRoute = [String:[Any]]()
+
     
     @IBAction func didTapExitRoute(_ sender: Any) {
         googleMaps.clear()
@@ -73,11 +78,40 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let routeOverviewPolyline:NSDictionary = (chosenRoute as NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
         let points = routeOverviewPolyline.object(forKey: "points")
         let path = GMSPath.init(fromEncodedPath: points! as! String)
-        let polyline = GMSPolyline.init(path: path)
-        polyline.strokeWidth = 3
+        let tappedPolyline = GMSPolyline.init(path: path)
+        tappedPolyline.strokeWidth = 3
         let bounds = GMSCoordinateBounds(path: path!)
         googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
-        polyline.map = self.googleMaps
+        tappedPolyline.map = self.googleMaps
+        
+        // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now.
+        // plot the crimes that are in the tolerance of the given path only
+//        for incident in markersPerRoute[points! as! String]! {
+//            if let incidentDict = incident as? Dictionary<String, Any> {
+//                let incidentLatitude = incidentDict["incident_latitude"] as! Double
+//                let incidentLongitude = incidentDict["incident_longitude"] as! Double
+//                let incidentDescription = incidentDict["incident_offense_detail_description"] as! String
+//                let incidentTime = incidentDict["incident_date"] as! String
+//                let incidentTitle = incidentDict["incident_offense"] as! String
+//                let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
+//
+//                let marker = GMSMarker(position: incidentCoords)
+//                marker.title = incidentTitle
+//                marker.snippet = incidentTime + ":" + incidentDescription
+//                marker.snippet = incidentDescription
+//                marker.map = self.googleMaps
+//            }
+//        }
+        
+        //remove the paths you didn't choose (keeps all crimes on screen)
+        for polyline in polylineList {
+            if polyline == tappedPolyline{
+                polyline.strokeColor = UIColor.blue
+            } else {
+                polyline.map = nil
+            }
+        }
+        
         let directionsListTuples = getDirectionsListFromRoute(route: chosenRoute)
         
         //THIS IS JUST A TES NORMALLY THE USER NEEDS TO SELECT A PATH BEFORE THIS GETS DISPLAYED
@@ -101,13 +135,13 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         setRouteUI(routeStatus: .pathSelection)
         
         drawAllPathsWithCompletion(from: selectedStartLocation, to: selectedDestinationLocation) { (routes) in
-//            for route in routes {
-//                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
-//                let points = routeOverviewPolyline.object(forKey: "points")
-//                let path = GMSPath.init(fromEncodedPath: points! as! String)
-//
-//                self.getCrimesInPastYear(path: path!, tolerance: 1, units: "km")
-//            }
+            for route in routes {
+                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                let points = routeOverviewPolyline.object(forKey: "points")
+                let path = GMSPath.init(fromEncodedPath: points! as! String)
+
+                self.getCrimesInPastYear(path: path!, tolerance: 1, units: "km")
+            }
         }
     }
     
@@ -474,6 +508,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             } else {
                 do {
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+                    print(json)
                     if let incidentsArr = json["incidents"] as? Array<Any> {
                         print("NUMINCIDENTS", incidentsArr.count)
                         for incident in incidentsArr {
@@ -486,6 +521,14 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
                                 let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
                                 if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, toleranceDist)) {
+                                    // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now.
+//                                    if (self.markersPerRoute[path.encodedPath()] == nil) {
+//                                        self.markersPerRoute[path.encodedPath()] = [incidentDict]
+//                                    } else  {
+//                                        self.markersPerRoute[path.encodedPath()]!.append(incidentDict)
+//                                    }
+                                    //instead, just save all the polylines (in drawAllPathsWithCompletion) to delete them all later and the one you picked will be redrawn in a different method
+                                   
                                     DispatchQueue.main.async {
                                         let marker = GMSMarker(position: incidentCoords)
                                         marker.title = incidentTitle
@@ -528,6 +571,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                             let routeOverviewPolyline:NSDictionary = (route as NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
                             let points = routeOverviewPolyline.object(forKey: "points")
                             let path = GMSPath.init(fromEncodedPath: points! as! String)
+                            
+                            //need to test if this line can replace completion block but can't do that until we get a new API key
+//                            self.getCrimesInPastYear(path: path!, tolerance: 1, units: "km")
+                            
                             let polyline = GMSPolyline.init(path: path)
                             polyline.strokeWidth = 3
                             polyline.strokeColor = self.randomColor()
@@ -538,6 +585,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                             self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
 
                             polyline.map = self.googleMaps
+                            self.polylineList.append(polyline)
                         }
                         completion(routes)
                     }
@@ -566,6 +614,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         if (segue.identifier == "segueToDirectionsList") {
             let directionsListVC = segue.destination as? DirectionsListViewController
             directionsListVC?.directionsList = self.directionsList
+            // have another  line once GPS is set up that sets directionsListVC?.currentDirectionIndex = self.currentDirectionIndex
+            // or something like that to pass the current direction the user is on, to highlight the correct direction
         }
     }
 }

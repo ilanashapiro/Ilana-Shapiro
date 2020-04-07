@@ -10,25 +10,15 @@ import UIKit
 
 class DirectionsListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
-    @IBAction func onReload(_ sender: Any) {
-        tableView.reloadData()
-        var num = 0
-        for direction in directionsList {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "directionsTableViewCell", for: IndexPath(row: num, section: 0)) as! DirectionsTableViewCell
-            print(cell.directionsLabel.text)
-            num += 1
-        }
-    }
-    var directionsList = ["Hello", "one", "two", "three"] //[String]()
+    var directionsList = [String]()
+    var currentDirectionIndex = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.dataSource = self
         tableView.delegate = self
-        
-//        tableView.register(DirectionsTableViewCell.self, forCellReuseIdentifier: "directionsTableViewCell")
-//        tableView.estimatedRowHeight = 100
-//        tableView.rowHeight = UITableView.automaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 300
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -40,8 +30,21 @@ class DirectionsListViewController: UIViewController, UITableViewDelegate, UITab
         let cell = tableView.dequeueReusableCell(withIdentifier: "directionsTableViewCell", for: indexPath) as! DirectionsTableViewCell
         let direction = directionsList[indexPath.row]
         cell.directionsLabel.text = direction
-        //        print(cell.directionsLabel.text)
+        
+        //set the current direction tableviewcell to yellow
+       //it's always 0 for now but should be passed in from MapsVC and then updated as needed when GPS is implemented
+       //section is always 0 in IndexPath (we don't have multiple sections)
+        if (indexPath.row == currentDirectionIndex) {
+            cell.backgroundColor = UIColor.init(red: 1.0, green: 1.0, blue: 0.0, alpha: 1)
+        }
+        
         return cell
+    }
+    
+    func updateCurrentDirection() {
+        // TODO: fill this in with updating the direction based on GPS
+        // once this is filled in (updating the current direction index in relation to the directions array),
+        // make the previously current direction cell clear background and make the new current direction cell yellow
     }
     
     /*
