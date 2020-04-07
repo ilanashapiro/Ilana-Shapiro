@@ -47,6 +47,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     var lastTappedRoutePolyline = GMSPolyline()
     var chosenRoute = [String:Any]()
+    var directionsList = [String]()
     
     @IBAction func didTapExitRoute(_ sender: Any) {
         googleMaps.clear()
@@ -55,8 +56,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         selectedDestinationLocation.latitude = 0.0
         startLocationTextField.text = ""
         destinationLocationTextField.text = ""
-    }
-    @IBAction func didTapDirectionsList(_ sender: Any) {
     }
     
     @IBAction func didTapSelectPath(_ sender: Any) {
@@ -69,6 +68,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         setRouteUI(routeStatus: .onRoute)
         
+        // clear the map and redraw the chosen route only
         googleMaps.clear()
         let routeOverviewPolyline:NSDictionary = (chosenRoute as NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
         let points = routeOverviewPolyline.object(forKey: "points")
@@ -78,18 +78,17 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let bounds = GMSCoordinateBounds(path: path!)
         googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
         polyline.map = self.googleMaps
-        let directionsList = getDirectionsListFromRoute(route: chosenRoute)
+        let directionsListTuples = getDirectionsListFromRoute(route: chosenRoute)
         
         //THIS IS JUST A TES NORMALLY THE USER NEEDS TO SELECT A PATH BEFORE THIS GETS DISPLAYED
         //THERE SHOULD BE AN INTERMEDIATE UI FOR THE PATH SELECTION STAGE
-        if (directionsList.count > 0) {
+        if (directionsListTuples.count > 0) {
             //the first part of the tuple (i.e. element 0) is the string description of the direction
-            nextDirectionTextView.text = directionsList[0].0.htmlToString
+            nextDirectionTextView.text = directionsListTuples[0].0.htmlToString
             
             //NEED TO MAKE IT SO THE NEXT DIRECTION UPDATES WHEN THE USER PASSES GETS TO THE END LOCATION OF THIS LEG (STORED AS SECOND TUPLE VAL IN THE DIRECTIONSLIST ARRAY) VIA GPS. THIS ISN'T HANDLED HERE THIS IS JUST SETUP.
         }
     }
-    
     
     @IBAction func didTapGetPath(_ sender: Any) {
         if (selectedStartLocation.latitude == 0.0 || selectedDestinationLocation.latitude == 0.0) {
@@ -102,13 +101,13 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         setRouteUI(routeStatus: .pathSelection)
         
         drawAllPathsWithCompletion(from: selectedStartLocation, to: selectedDestinationLocation) { (routes) in
-            for route in routes {
-                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
-                let points = routeOverviewPolyline.object(forKey: "points")
-                let path = GMSPath.init(fromEncodedPath: points! as! String)
-                
-                self.getCrimesInPastYear(path: path!, tolerance: 1, units: "km")
-            }
+//            for route in routes {
+//                let routeOverviewPolyline:NSDictionary = (route as! NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+//                let points = routeOverviewPolyline.object(forKey: "points")
+//                let path = GMSPath.init(fromEncodedPath: points! as! String)
+//
+//                self.getCrimesInPastYear(path: path!, tolerance: 1, units: "km")
+//            }
         }
     }
     
@@ -368,7 +367,12 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 let lng:Double = endLocationInfo.value(forKey: "lat") as! Double
                 let coords = CLLocationCoordinate2D(latitude: lat, longitude: lng)
                 
-                directionsList.append((description: htmlDirections + " for " + distanceDescription, endLocation: coords))
+                let directionsDescription = htmlDirections.htmlToString + " for "
+                
+                directionsList.append((description: directionsDescription + distanceDescription, endLocation: coords))
+                
+                // build the list of directions for use in the directions list VC
+                self.directionsList.append(directionsDescription + distanceDescription)
             }
         }
         
@@ -555,6 +559,14 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let profileButton = UIBarButtonItem(title: "Go to Profile", style: UIBarButtonItem.Style.plain, target: self, action:#selector(profileButtonTapped))
         navigationItem.leftBarButtonItem = logoutButton
         navigationItem.rightBarButtonItem = profileButton
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
+    {
+        if (segue.identifier == "segueToDirectionsList") {
+            let directionsListVC = segue.destination as? DirectionsListViewController
+            directionsListVC?.directionsList = self.directionsList
+        }
     }
 }
 

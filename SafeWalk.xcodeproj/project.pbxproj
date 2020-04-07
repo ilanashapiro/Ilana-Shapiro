@@ -15,6 +15,8 @@
 		47A2B30823F94AD2009A4443 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A2B30623F94AD2009A4443 /* LaunchScreen.storyboard */; };
 		47A2B33823FE6104009A4443 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A2B33723FE6104009A4443 /* Main.storyboard */; };
 		47A2B35A23FE6333009A4443 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2B35923FE6333009A4443 /* SceneDelegate.swift */; };
+		47F55C76243BEE5300192F54 /* DirectionsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F55C75243BEE5300192F54 /* DirectionsTableViewCell.swift */; };
+		47F55C78243C0FD000192F54 /* DirectionsListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F55C77243C0FD000192F54 /* DirectionsListViewController.swift */; };
 		47FB8EB2240677A500D34E54 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FB8EB1240677A500D34E54 /* LoginViewController.swift */; };
 		47FB8EB624067A9000D34E54 /* SignUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FB8EB524067A9000D34E54 /* SignUpViewController.swift */; };
 		47FB8EBA2408F3DF00D34E54 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FB8EB92408F3DF00D34E54 /* WelcomeViewController.swift */; };
@@ -38,6 +40,8 @@
 		47A2B33723FE6104009A4443 /* Main.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		47A2B35923FE6333009A4443 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		47A2B35B23FE70C9009A4443 /* SafeWalk.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SafeWalk.entitlements; sourceTree = "<group>"; };
+		47F55C75243BEE5300192F54 /* DirectionsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionsTableViewCell.swift; sourceTree = "<group>"; };
+		47F55C77243C0FD000192F54 /* DirectionsListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionsListViewController.swift; sourceTree = "<group>"; };
 		47FB8EB1240677A500D34E54 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		47FB8EB524067A9000D34E54 /* SignUpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewController.swift; sourceTree = "<group>"; };
 		47FB8EB92408F3DF00D34E54 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
@@ -100,8 +104,10 @@
 				47FB8EB92408F3DF00D34E54 /* WelcomeViewController.swift */,
 				47FB8EB1240677A500D34E54 /* LoginViewController.swift */,
 				5CA6BBA6240204D700225256 /* MapViewController.swift */,
+				47F55C77243C0FD000192F54 /* DirectionsListViewController.swift */,
 				5CD8EA0C2418115500961EBC /* DirectionsViewController.swift */,
 				47A2B33723FE6104009A4443 /* Main.storyboard */,
+				47F55C75243BEE5300192F54 /* DirectionsTableViewCell.swift */,
 				47918FB2241DA2DF00858E60 /* PasswordViewController.swift */,
 				47A2B30623F94AD2009A4443 /* LaunchScreen.storyboard */,
 				47A2B30123F94AD2009A4443 /* Assets.xcassets */,
@@ -263,10 +269,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				47F55C78243C0FD000192F54 /* DirectionsListViewController.swift in Sources */,
 				47A2B2FC23F94AD1009A4443 /* AppDelegate.swift in Sources */,
 				47918FB3241DA2DF00858E60 /* PasswordViewController.swift in Sources */,
 				47FB8EBE240A644500D34E54 /* EmergencyContactViewController.swift in Sources */,
 				47A2B35A23FE6333009A4443 /* SceneDelegate.swift in Sources */,
+				47F55C76243BEE5300192F54 /* DirectionsTableViewCell.swift in Sources */,
 				47FB8EB2240677A500D34E54 /* LoginViewController.swift in Sources */,
 				47FB8EBA2408F3DF00D34E54 /* WelcomeViewController.swift in Sources */,
 				47FB8EBC2408F94000D34E54 /* ProfileViewController.swift in Sources */,
