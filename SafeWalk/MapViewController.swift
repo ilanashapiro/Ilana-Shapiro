@@ -28,7 +28,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBOutlet weak var directionsListButton: UIButton!
     @IBOutlet weak var selectPathButton: UIButton!
     @IBOutlet weak var pathSelectInstructionsLabel: UILabel!
-    
+    @IBOutlet weak var timeLabel: UILabel!
+    @IBOutlet weak var distanceLabel: UILabel!
     
     enum UIRouteState {
         case notChosenRoute
@@ -360,6 +361,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 destinationLocationTextField.isHidden = false
                 currentToOrigin.isHidden = false
                 getPathButton.isHidden = false
+                timeLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = true
                 exitRouteButton.isHidden = true
@@ -372,6 +374,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 destinationLocationTextField.isHidden = true
                 currentToOrigin.isHidden = true
                 getPathButton.isHidden = true
+                timeLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = true
                 exitRouteButton.isHidden = false
@@ -384,6 +387,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 destinationLocationTextField.isHidden = true
                 currentToOrigin.isHidden = true
                 getPathButton.isHidden = true
+                timeLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = false
                 exitRouteButton.isHidden = false
@@ -576,7 +580,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
                     let routes = json["routes"] as! [[String:Any]]
                     DispatchQueue.main.async {
-                        self.googleMaps.clear()
+//                        self.googleMaps.clear()
                         for route in routes {
                             let routeInfo = route as NSDictionary
                             let routeOverviewPolyline:NSDictionary =
@@ -599,6 +603,16 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 (leg["duration"] as! NSDictionary).value(forKey: "text") as! String
                             let distance =
                                 (leg["distance"] as! NSDictionary).value(forKey: "text") as! String
+                            
+                            // display the time and distance labels
+                            /*
+                            TODO: put these in a dictionary so that these
+                            labels change when we click on paths
+                            */
+                            self.timeLabel.text = duration
+                            self.timeLabel.isHidden = false
+                            self.distanceLabel.text = distance
+                            self.distanceLabel.isHidden = false
 
                             let bounds = GMSCoordinateBounds(path: path!)
                             self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
