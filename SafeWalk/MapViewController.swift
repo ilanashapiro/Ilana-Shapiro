@@ -181,19 +181,20 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBAction func myLocationUsed(_ sender: UIButton) {
         
         // get my location again
-        let myLocation = getCurrLocation()
+        let myLocationCoord = getCurrLocation()!.coordinate
         startLocationTextField.text = "Your location"
         if (locationStart != nil) {
             locationStart.map = nil
         }
-        locationStart = GMSMarker(position: myLocation!.coordinate)
+        locationStart = GMSMarker(position: myLocationCoord)
+        selectedStartLocation = myLocationCoord
         
         // get the center between the destination and your location. If the
         // destination was not yet selected, then just use current location
         let endCoordinates = (locationEnd != nil) ?
                         locationEnd.position :
-                        myLocation!.coordinate
-        let center = getMidpoint(startCoordinates: myLocation!.coordinate,
+                        myLocationCoord
+        let center = getMidpoint(startCoordinates: myLocationCoord,
                                  endCoordinates: endCoordinates)
         
         // put the marker on the map
@@ -577,7 +578,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                     DispatchQueue.main.async {
                         self.googleMaps.clear()
                         for route in routes {
-                            let routeOverviewPolyline:NSDictionary = (route as NSDictionary).value(forKey: "overview_polyline") as! NSDictionary
+                            let routeInfo = route as NSDictionary
+                            let routeOverviewPolyline:NSDictionary =
+                                routeInfo.value(forKey: "overview_polyline") as! NSDictionary
                             let points = routeOverviewPolyline.object(forKey: "points")
                             let path = GMSPath.init(fromEncodedPath: points! as! String)
                             
@@ -589,6 +592,13 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                             polyline.strokeColor = self.randomColor()
                             polyline.isTappable = true
                             polyline.userData = route
+                            
+                            // dictionary for time and distance info
+                            let leg = (routeInfo.value(forKey: "legs") as! [[String:Any]]).first!
+                            let duration =
+                                (leg["duration"] as! NSDictionary).value(forKey: "text") as! String
+                            let distance =
+                                (leg["distance"] as! NSDictionary).value(forKey: "text") as! String
 
                             let bounds = GMSCoordinateBounds(path: path!)
                             self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
