@@ -84,6 +84,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
         tappedPolyline.map = self.googleMaps
         
+        let startMarker = GMSMarker(position: tappedPolyline.path!.coordinate(at: 0))
+        let endMarker = GMSMarker(position: tappedPolyline.path!.coordinate(at: path!.count() - 1))
+        startMarker.icon = GMSMarker.markerImage(with: UIColor.magenta)
+        startMarker.title = "START"
+        startMarker.map = googleMaps
+        endMarker.icon = GMSMarker.markerImage(with: UIColor.green)
+        endMarker.title = "END"
+        endMarker.map = googleMaps
+        
         // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now.
         // plot the crimes that are in the tolerance of the given path only
 //        for incident in markersPerRoute[points! as! String]! {
