@@ -15,7 +15,7 @@ class ProfileViewController: UIViewController, EmergencyContactViewControllerDel
         self.emergencyContactNameLabel.text = name
         self.emergencyContactNumberLabel.text = formatPhoneNumber(number: number)
         
-        controller.navigationController?.popViewController(animated: true)
+    controller.navigationController?.popViewController(animated: true)
     }
     
     var db: Firestore!
@@ -75,6 +75,15 @@ class ProfileViewController: UIViewController, EmergencyContactViewControllerDel
         db = Firestore.firestore()
         nameLabel.text = Auth.auth().currentUser?.displayName
         emailLabel.text = Auth.auth().currentUser?.email
+        
+        
+//        if SignUpViewController().contactNameTextField != nil {
+//            emergencyContactNameLabel.text = SignUpViewController().contactNameTextField.text
+//        }
+//        
+//        if SignUpViewController().contactPhoneTextField != nil {
+//            emergencyContactNumberLabel.text = SignUpViewController().contactPhoneTextField.text
+//        }
         
         updateEmergencyContactUI()
     }
