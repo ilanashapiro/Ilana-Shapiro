@@ -28,6 +28,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBOutlet weak var directionsListButton: UIButton!
     @IBOutlet weak var selectPathButton: UIButton!
     @IBOutlet weak var pathSelectInstructionsLabel: UILabel!
+    
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var distanceLabel: UILabel!
     
@@ -182,7 +183,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBAction func myLocationUsed(_ sender: UIButton) {
         
         // get my location again
-        let myLocationCoord = getCurrLocation()!.coordinate
+        getCurrLocation()
+        let myLocationCoord = locationManager.location!.coordinate
         startLocationTextField.text = "Your location"
         if (locationStart != nil) {
             locationStart.map = nil
@@ -204,7 +206,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     
     /// Gets the user's real current location
-    func getCurrLocation() -> CLLocation! {
+    func getCurrLocation() {
         
         // get user auth to collect location data
         self.locationManager.requestWhenInUseAuthorization()
@@ -217,8 +219,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             locationManager.startUpdatingLocation()
             locationManager.startMonitoringSignificantLocationChanges()
         }
-        
-        return locationManager.location
+
     }
 
     // location manager delegates
@@ -362,6 +363,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 currentToOrigin.isHidden = false
                 getPathButton.isHidden = false
                 timeLabel.isHidden = true
+                distanceLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = true
                 exitRouteButton.isHidden = true
@@ -375,6 +377,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 currentToOrigin.isHidden = true
                 getPathButton.isHidden = true
                 timeLabel.isHidden = true
+                distanceLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = true
                 exitRouteButton.isHidden = false
@@ -388,6 +391,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 currentToOrigin.isHidden = true
                 getPathButton.isHidden = true
                 timeLabel.isHidden = true
+                distanceLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = false
                 exitRouteButton.isHidden = false
