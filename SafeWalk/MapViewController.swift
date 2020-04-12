@@ -50,7 +50,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     var lastTappedRoutePolyline = GMSPolyline()
     var chosenRoute = [String:Any]()
     var directionsList = [String]()
-    var polylineList = [GMSPolyline]()
+    var polylineDict = [GMSPolyline:NSDictionary]()
     
 // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now. It replaces polylineList in function
 //    var markersPerRoute = [String:[Any]]()
@@ -115,7 +115,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
 //        }
         
         //remove the paths you didn't choose (keeps all crimes on screen)
-        for polyline in polylineList {
+        for polyline in polylineDict.keys {
             if polyline == tappedPolyline{
                 polyline.strokeColor = UIColor.blue
             } else {
@@ -253,18 +253,28 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     func mapView(_ mapView: GMSMapView, didTap overlay: GMSOverlay) {
-           if let routePolyline = overlay as? GMSPolyline {
-                if (routePolyline == lastTappedRoutePolyline) {
-                    routePolyline.strokeWidth /= 2
-                    return
-                }
-                if (lastTappedRoutePolyline.path != nil) {
-                    lastTappedRoutePolyline.strokeWidth /= 2
-                }
-                routePolyline.strokeWidth *= 2
-                lastTappedRoutePolyline = routePolyline
+        if let routePolyline = overlay as? GMSPolyline {
+            if (routePolyline == lastTappedRoutePolyline) {
+                routePolyline.strokeWidth /= 2
+                return
+            }
+            if (lastTappedRoutePolyline.path != nil) {
+                lastTappedRoutePolyline.strokeWidth /= 2
+            }
+            routePolyline.strokeWidth *= 2
+            lastTappedRoutePolyline = routePolyline
+        
+            // change displayed distance and duration of tapped path
+            distanceLabel.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+            timeLabel.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+            distanceLabel.isHidden = false
+            timeLabel.isHidden = false
+            distanceLabel.text =
+                polylineDict[routePolyline]!.value(forKey: "distance") as? String
+            timeLabel.text =
+                polylineDict[routePolyline]!.value(forKey: "duration") as? String
                 
-                chosenRoute = routePolyline.userData as! [String:Any]
+            chosenRoute = routePolyline.userData as! [String:Any]
            }
        }
     
@@ -603,26 +613,26 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                             
                             // dictionary for time and distance info
                             let leg = (routeInfo.value(forKey: "legs") as! [[String:Any]]).first!
-                            let duration =
+                            var duration =
                                 (leg["duration"] as! NSDictionary).value(forKey: "text") as! String
                             let distance =
                                 (leg["distance"] as! NSDictionary).value(forKey: "text") as! String
                             
-                            // display the time and distance labels
-                            /*
-                            TODO: put these in a dictionary so that these
-                            labels change when we click on paths
-                            */
-                            self.timeLabel.text = duration
-                            self.timeLabel.isHidden = false
-                            self.distanceLabel.text = distance
-                            self.distanceLabel.isHidden = false
+                            // change "hours" to "hrs"
+                            if let i = duration.firstIndex(of: "o") {
+                                let j = duration.firstIndex(of: "u")!
+                                duration.removeSubrange(i ... j)
+                            }
+                            
+                            // save to hashmap to make label displaying faster
+                            self.polylineDict[polyline] =
+                                ["duration" : duration,
+                                 "distance" : distance] as NSDictionary
 
                             let bounds = GMSCoordinateBounds(path: path!)
                             self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
-
                             polyline.map = self.googleMaps
-                            self.polylineList.append(polyline)
+
                         }
                         completion(routes)
                     }
