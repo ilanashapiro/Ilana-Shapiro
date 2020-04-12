@@ -489,7 +489,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         return center
     }
     
-    //https://stackoverflow.com/questions/21130433/generate-a-random-uicolor
+    // https://stackoverflow.com/questions/21130433/generate-a-random-uicolor
     func randomColor() -> UIColor {
         let red = Double(arc4random_uniform(256)) / 255.0
         let green = Double(arc4random_uniform(256)) / 255.0
@@ -577,12 +577,14 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     func drawAllPathsWithCompletion(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D, completion: @escaping  (Array<Any>) -> Void) {
+        
+        // get path from origin to destination using google maps API
         let origin = "\(source.latitude),\(source.longitude)"
         let destination = "\(destination.latitude),\(destination.longitude)"
-        
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let apiKey = appDelegate.MAPS_API_KEY
-        //https://developers.google.com/maps/documentation/directions/intro
+        
+        // https://developers.google.com/maps/documentation/directions/intro
         let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=walking&alternatives=true&key=\(apiKey)"
         let url = URL(string: urlString)
         URLSession.shared.dataTask(with: url!, completionHandler: {
@@ -591,10 +593,12 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 print("error in getting paths!", error?.localizedDescription)
             } else {
                 do {
+                    // get jsonified string of data from API call
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+                    
+                    // parse the information about routes
                     let routes = json["routes"] as! [[String:Any]]
                     DispatchQueue.main.async {
-//                        self.googleMaps.clear()
                         for route in routes {
                             let routeInfo = route as NSDictionary
                             let routeOverviewPolyline:NSDictionary =
