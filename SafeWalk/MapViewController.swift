@@ -139,15 +139,18 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             // create a region for each endpoint in every google maps path step
             for checkpoint in directionsList {
                 let region = CLCircularRegion(center: checkpoint.endLocation,
-                                              radius: 7.0,
+                                              radius: CLLocationDistance(2),
                                               identifier: checkpoint.description)
                 regionCenters.append(region)
+                self.locationManager.startMonitoring(for: region)
+                region.notifyOnEntry = true
             }
             
             // start monitoring the endpoint of the first instruction
-            self.locationManager.startMonitoring(for: regionCenters.first!)
+            print("***************")
             print(regionCenters.first!.identifier)
             print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
+            print("***************")
             
             //NEED TO MAKE IT SO THE NEXT DIRECTION UPDATES WHEN THE USER PASSES GETS TO THE END LOCATION OF THIS LEG (STORED AS SECOND TUPLE VAL IN THE DIRECTIONSLIST ARRAY) VIA GPS. THIS ISN'T HANDLED HERE THIS IS JUST SETUP.
         }
@@ -199,7 +202,27 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.locationManager.requestWhenInUseAuthorization()
         self.locationManager.requestAlwaysAuthorization()
         
+        regionCenters.removeAll()
+        for region in locationManager.monitoredRegions {
+            locationManager.stopMonitoring(for: region)
+        }
+        
         getCurrLocation()
+        
+        // user's live location
+        let currLocation = locationManager.location
+        let userLat = currLocation!.coordinate.latitude
+        let userLong = currLocation!.coordinate.longitude
+        
+        /* NOTE: for this current location to work, go to the menu bar and
+         click Debug > Simulate Location > Add GPX File to Workspace...
+         then pick the oldenborg.gpx file in the directory (or put your own
+         coordinates) */
+        let camera = GMSCameraPosition(latitude: userLat,
+                                       longitude: userLong, zoom: 12)
+        
+        // various google maps preferences
+        self.googleMaps.camera = camera
         setRouteUI(routeStatus: .notChosenRoute)
         nextDirectionTextView.isEditable = false
         
@@ -252,20 +275,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     // location manager delegates continued
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
-        // user's live location
-        let currLocation = locations.last
-        let userLat = currLocation!.coordinate.latitude
-        let userLong = currLocation!.coordinate.longitude
-        
-        /* NOTE: for this current location to work, go to the menu bar and
-         click Debug > Simulate Location > Add GPX File to Workspace...
-         then pick the oldenborg.gpx file in the directory (or put your own
-         coordinates) */
-        let camera = GMSCameraPosition(latitude: userLat,
-                                       longitude: userLong, zoom: 12)
-        
-        // various google maps preferences
-        self.googleMaps.camera = camera
         self.googleMaps.delegate = self
         self.googleMaps.isMyLocationEnabled = true
         self.googleMaps.settings.myLocationButton = true
@@ -276,12 +285,39 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         
+        print("++++++++++++++++++++")
+        print("entering \(region.identifier)")
+        print("++++++++++++++++++++")
+        
         // stop monitoring the last passed location
         self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
         
         // start monitoring the next one
-        self.locationManager.startMonitoring(for: regionCenters.first!)
-        nextDirectionTextView.text = regionCenters.first!.description
+        // TODO:
+        // 1) should i monitor all at once
+        // 2) stop when this the last region has been walked to
+        nextDirectionTextView.text = regionCenters.first!.identifier
+        print("***************")
+        print(regionCenters.first!.identifier)
+        print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
+        print("***************")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
+        print("======================")
+        print("monitoring \(region.identifier)")
+        print("======================")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        print("-----------------------")
+        print("exited \(region.identifier)")
+        print("-----------------------")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
+        print("oh no!")
+        print(error)
     }
     
     func mapView(_ mapView: GMSMapView, didTap overlay: GMSOverlay) {
@@ -373,7 +409,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // change text color
         UISearchBar.appearance().setTextColor(color: UIColor.black)
         
-        self.locationManager.stopUpdatingLocation()
         self.present(autoCompleteController, animated: true, completion: nil)
     }
     
