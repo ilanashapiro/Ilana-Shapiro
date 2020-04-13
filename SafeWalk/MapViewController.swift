@@ -49,7 +49,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     var lastTappedRoutePolyline = GMSPolyline()
     var chosenRoute = [String:Any]()
-    var directionsList = [String]()
+    var directionsList = [(description: String, endLocation: CLLocationCoordinate2D)]()
     var polylineDict = [GMSPolyline:NSDictionary]()
     
 // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now. It replaces polylineList in function
@@ -123,7 +123,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             }
         }
         
-        let directionsListTuples = getDirectionsListFromRoute(route: chosenRoute)
+        getDirectionsListFromRoute(route: chosenRoute)
+        let directionsListTuples = self.directionsList
         
         //THIS IS JUST A TES NORMALLY THE USER NEEDS TO SELECT A PATH BEFORE THIS GETS DISPLAYED
         //THERE SHOULD BE AN INTERMEDIATE UI FOR THE PATH SELECTION STAGE
@@ -412,33 +413,30 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
          }
     }
     
-    func getDirectionsListFromRoute(route:[String:Any]) -> [(String, CLLocationCoordinate2D)]{
-        var directionsList = [(description: String, endLocation: CLLocationCoordinate2D)]()
+    func getDirectionsListFromRoute(route:[String:Any]) {
+        
+        // the legs of the path (since we use no waypoints, there's only 1 leg)
         let legs:[[String:Any]] = (route as NSDictionary).value(forKey: "legs") as! [[String:Any]]
-        
-        for leg in legs {
-            let steps:[[String:Any]] = (leg as NSDictionary).value(forKey: "steps") as! [[String:Any]]
-            for step in steps {
-                let htmlDirections:String = (step as NSDictionary).value(forKey: "html_instructions") as! String
-                
-                let distanceInfo:NSDictionary = (step as NSDictionary).value(forKey: "distance") as! NSDictionary
-                let distanceDescription:String = distanceInfo.value(forKey: "text") as! String
-                
-                let endLocationInfo:NSDictionary = (step as NSDictionary).value(forKey: "end_location") as! NSDictionary
-                let lat:Double = endLocationInfo.value(forKey: "lat") as! Double
-                let lng:Double = endLocationInfo.value(forKey: "lat") as! Double
-                let coords = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-                
-                let directionsDescription = htmlDirections.htmlToString + " for "
-                
-                directionsList.append((description: directionsDescription + distanceDescription, endLocation: coords))
-                
-                // build the list of directions for use in the directions list VC
-                self.directionsList.append(directionsDescription + distanceDescription)
-            }
+        let leg = legs.first!
+    
+        let steps:[[String:Any]] = (leg as NSDictionary).value(forKey: "steps") as! [[String:Any]]
+        for step in steps {
+            let htmlDirections:String = (step as NSDictionary).value(forKey: "html_instructions") as! String
+            
+            let distanceInfo:NSDictionary = (step as NSDictionary).value(forKey: "distance") as! NSDictionary
+            let distanceDescription:String = distanceInfo.value(forKey: "text") as! String
+            
+            let endLocationInfo:NSDictionary = (step as NSDictionary).value(forKey: "end_location") as! NSDictionary
+            let lat:Double = endLocationInfo.value(forKey: "lat") as! Double
+            let lng:Double = endLocationInfo.value(forKey: "lat") as! Double
+            let coords = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+            
+            let directionsDescription = htmlDirections.htmlToString + " for "
+            
+            // build the list of directions for use in the directions list VC
+            self.directionsList.append((description: directionsDescription + distanceDescription, endLocation: coords))
         }
-        
-        return directionsList
+    
     }
     
     func radiansToDegrees(_ radians: Double) -> Double {
