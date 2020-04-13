@@ -261,15 +261,6 @@
                                     <action selector="openDestinationLocation:" destination="l2D-4s-Yp9" eventType="editingDidBegin" id="u6P-fS-QmZ"/>
                                 </connections>
                             </textField>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bt2-dr-89v">
-                                <rect key="frame" x="158" y="759" width="98" height="42"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="25"/>
-                                <state key="normal" title="Get Path"/>
-                                <connections>
-                                    <action selector="didTapGetPath:" destination="l2D-4s-Yp9" eventType="touchUpInside" id="6mU-yK-RL5"/>
-                                </connections>
-                            </button>
                             <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="78w-el-5kH" userLabel="Google Maps" customClass="GMSMapView">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="649"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -347,7 +338,7 @@
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YTh-ND-TRh">
-                                <rect key="frame" x="58" y="665" width="336" height="93"/>
+                                <rect key="frame" x="39" y="666" width="336" height="93"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <string key="text">Tap on route on map to make selection (you can tap on different ones to view). After you made your selection, press the select path button.</string>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
@@ -361,6 +352,15 @@
                                 <state key="normal" title="Select Path"/>
                                 <connections>
                                     <action selector="didTapSelectPath:" destination="l2D-4s-Yp9" eventType="touchUpInside" id="2Mr-pV-wqS"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bt2-dr-89v">
+                                <rect key="frame" x="158" y="760" width="98" height="42"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="25"/>
+                                <state key="normal" title="Get Path"/>
+                                <connections>
+                                    <action selector="didTapGetPath:" destination="l2D-4s-Yp9" eventType="touchUpInside" id="6mU-yK-RL5"/>
                                 </connections>
                             </button>
                         </subviews>

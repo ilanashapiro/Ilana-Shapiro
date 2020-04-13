@@ -7,10 +7,11 @@
 //
 
 import UIKit
+import GoogleMaps
 
 class DirectionsListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
-    var directionsList =  [(description: String, endLocation: Any)]()
+    var directionsList =  [(description: String, endLocation: CLLocationCoordinate2D)]()
     var currentDirectionIndex = 0
     
     override func viewDidLoad() {

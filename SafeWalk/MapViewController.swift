@@ -52,6 +52,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     var directionsList = [(description: String, endLocation: CLLocationCoordinate2D)]()
     var polylineDict = [GMSPolyline:NSDictionary]()
     
+    // list of endpoints for each google map gps direction instruction
+    var regionCenters = [CLCircularRegion]()
+    
 // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now. It replaces polylineList in function
 //    var markersPerRoute = [String:[Any]]()
 
@@ -123,17 +126,34 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             }
         }
         
+        // put all directions onto a list (display all to user)
         getDirectionsListFromRoute(route: chosenRoute)
-        let directionsListTuples = self.directionsList
         
         //THIS IS JUST A TES NORMALLY THE USER NEEDS TO SELECT A PATH BEFORE THIS GETS DISPLAYED
         //THERE SHOULD BE AN INTERMEDIATE UI FOR THE PATH SELECTION STAGE
-        if (directionsListTuples.count > 0) {
+        if (self.directionsList.count > 0) {
+            
             //the first part of the tuple (i.e. element 0) is the string description of the direction
-            nextDirectionTextView.text = directionsListTuples[0].0.htmlToString
+            nextDirectionTextView.text = self.directionsList.first?.description
+            
+            // create a region for each endpoint in every google maps path step
+            for checkpoint in directionsList {
+                let region = CLCircularRegion(center: checkpoint.endLocation,
+                                              radius: 7.0,
+                                              identifier: checkpoint.description)
+                regionCenters.append(region)
+            }
+            
+            // start monitoring the endpoint of the first instruction
+            self.locationManager.startMonitoring(for: regionCenters.first!)
+            print(regionCenters.first!.identifier)
+            print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
             
             //NEED TO MAKE IT SO THE NEXT DIRECTION UPDATES WHEN THE USER PASSES GETS TO THE END LOCATION OF THIS LEG (STORED AS SECOND TUPLE VAL IN THE DIRECTIONSLIST ARRAY) VIA GPS. THIS ISN'T HANDLED HERE THIS IS JUST SETUP.
         }
+        
+        
+        
     }
     
     @IBAction func didTapGetPath(_ sender: Any) {
@@ -174,9 +194,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // get user auth to collect location data
+        self.locationManager.requestWhenInUseAuthorization()
+        self.locationManager.requestAlwaysAuthorization()
+        
         getCurrLocation()
         setRouteUI(routeStatus: .notChosenRoute)
         nextDirectionTextView.isEditable = false
+        
     }
     
     /// Sets the current location to the starting location
@@ -184,7 +210,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBAction func myLocationUsed(_ sender: UIButton) {
         
         // get my location again
-        getCurrLocation()
         let myLocationCoord = locationManager.location!.coordinate
         startLocationTextField.text = "Your location"
         if (locationStart != nil) {
@@ -208,11 +233,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     /// Gets the user's real current location
     func getCurrLocation() {
-        
-        // get user auth to collect location data
-        self.locationManager.requestWhenInUseAuthorization()
-        self.locationManager.requestAlwaysAuthorization()
-        
+
         // show user location if auth provided
         if CLLocationManager.locationServicesEnabled() {
             locationManager.delegate = self
@@ -251,6 +272,16 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.googleMaps.settings.compassButton = true
         self.googleMaps.settings.zoomGestures = true
 
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        
+        // stop monitoring the last passed location
+        self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
+        
+        // start monitoring the next one
+        self.locationManager.startMonitoring(for: regionCenters.first!)
+        nextDirectionTextView.text = regionCenters.first!.description
     }
     
     func mapView(_ mapView: GMSMapView, didTap overlay: GMSOverlay) {
@@ -311,7 +342,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         googleMaps.selectedMarker = nil
         return false
     }
-    
     
     /// When start location is tapped, open search location
     /// Note: GMSAutocomplete only shows 5 at a time
@@ -428,7 +458,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             
             let endLocationInfo:NSDictionary = (step as NSDictionary).value(forKey: "end_location") as! NSDictionary
             let lat:Double = endLocationInfo.value(forKey: "lat") as! Double
-            let lng:Double = endLocationInfo.value(forKey: "lat") as! Double
+            let lng:Double = endLocationInfo.value(forKey: "lng") as! Double
             let coords = CLLocationCoordinate2D(latitude: lat, longitude: lng)
             
             let directionsDescription = htmlDirections.htmlToString + " for "
