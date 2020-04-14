@@ -87,6 +87,7 @@
 	<array>
 		<string>googlechromes</string>
 		<string>comgooglemaps</string>
+        <string>tel</string>
 	</array>
 </dict>
 </plist>

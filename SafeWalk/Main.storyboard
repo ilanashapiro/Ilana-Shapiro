@@ -363,6 +363,24 @@
                                     <action selector="didTapGetPath:" destination="l2D-4s-Yp9" eventType="touchUpInside" id="6mU-yK-RL5"/>
                                 </connections>
                             </button>
+                            <button hidden="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hmw-b3-wYb">
+                                <rect key="frame" x="95" y="586" width="224" height="49"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="17"/>
+                                <state key="normal" title="Call Emergency Contact">
+                                    <color key="titleColor" systemColor="systemRedColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="callContact:" destination="l2D-4s-Yp9" eventType="touchUpInside" id="UT0-Dn-taT"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <viewLayoutGuide key="safeArea" id="ax1-Ig-gqs"/>
@@ -371,6 +389,7 @@
                     <navigationItem key="navigationItem" id="WG0-Xq-bzr"/>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="callContactButton" destination="hmw-b3-wYb" id="vtA-hr-020"/>
                         <outlet property="currentToOrigin" destination="eb0-hU-u5j" id="T9q-KC-Y8U"/>
                         <outlet property="destinationLocationTextField" destination="l85-08-JDz" id="m0P-Dy-haK"/>
                         <outlet property="directionsListButton" destination="HDD-Lz-kfM" id="AFi-Nl-ZK7"/>

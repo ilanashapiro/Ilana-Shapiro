@@ -17,6 +17,7 @@ enum Location {
 }
 
 class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManagerDelegate {
+    var db:Firestore!
 
     @IBOutlet weak var googleMaps: GMSMapView!
     @IBOutlet weak var startLocationTextField: UITextField!
@@ -31,6 +32,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var distanceLabel: UILabel!
+    
+    @IBOutlet weak var callContactButton: UIButton!
+    
+    
     
     enum UIRouteState {
         case notChosenRoute
@@ -54,6 +59,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     // list of endpoints for each google map gps direction instruction
     var regionCenters = [CLCircularRegion]()
+    
+    var contactName = ""
+    var contactNumber = ""
     
 // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now. It replaces polylineList in function
 //    var markersPerRoute = [String:[Any]]()
@@ -197,6 +205,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
         super.viewDidLoad()
+        db = Firestore.firestore()
         
         // get user auth to collect location data
         self.locationManager.requestWhenInUseAuthorization()
@@ -227,6 +236,31 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         setRouteUI(routeStatus: .notChosenRoute)
         nextDirectionTextView.isEditable = false
         
+        // adding call emergency contact button
+        //callContactButton.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+        callContactButton.isHidden = false
+        
+    }
+    
+    func getEmergencyContactPhone() {
+        let emergencyContactRef = db.collection("users").document(Auth.auth().currentUser!.uid)
+        emergencyContactRef.getDocument { (document, error) in
+            if let document = document, document.exists {
+                self.contactName = (document.get("contactName") as? String)!
+                self.contactNumber = (document.get("number") as? String)!
+            } else {
+                print("Document does not exist")
+            }
+        }
+    }
+    
+    @IBAction func callContact(_ sender: Any) {
+        getEmergencyContactPhone()
+        
+        if let url = URL(string: "tel://\(self.contactNumber)"),
+        UIApplication.shared.canOpenURL(url) {
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
     }
     
     /// Sets the current location to the starting location
@@ -722,6 +756,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let profileButton = UIBarButtonItem(title: "Go to Profile", style: UIBarButtonItem.Style.plain, target: self, action:#selector(profileButtonTapped))
         navigationItem.leftBarButtonItem = logoutButton
         navigationItem.rightBarButtonItem = profileButton
+        
+
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?)
@@ -733,6 +769,27 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             // or something like that to pass the current direction the user is on, to highlight the correct direction
         }
     }
+
+//   func getContactNumber() {
+//       let emergencyContactRef = db.collection("users").document(Auth.auth().currentUser!.uid)
+//       emergencyContactRef.getDocument { (document, error) in
+//       if let document = document, document.exists {
+//           self.contactName = (document.get("contactName") as? String)!
+//           self.contactNumber = (document.get("number") as? String)!
+//       } else {
+//           print("Document does not exist")
+//       }
+//        }
+//    }
+//    
+//    @IBAction func callContact(_ sender: Any) {
+//        getContactNumber()
+//        
+//        if let url = URL(string: "tel://\(self.contactNumber)"),
+//            UIApplication.shared.canOpenURL(url) {
+//            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+//        }
+//    }
 }
 
 // GMS Auto Complete Delegate for autocomplete search location
@@ -754,7 +811,7 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         
         // the marker to drop on the map
         var marker: GMSMarker!
-        
+    
         // cases for camera zoom depending on if start or end was just specified
         switch locationSelected {
         case .startLocation:
