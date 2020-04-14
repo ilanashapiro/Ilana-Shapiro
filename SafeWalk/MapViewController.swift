@@ -17,6 +17,7 @@ enum Location {
 }
 
 class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManagerDelegate {
+    var db:Firestore!
 
     @IBOutlet weak var googleMaps: GMSMapView!
     @IBOutlet weak var startLocationTextField: UITextField!
@@ -28,8 +29,13 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBOutlet weak var directionsListButton: UIButton!
     @IBOutlet weak var selectPathButton: UIButton!
     @IBOutlet weak var pathSelectInstructionsLabel: UILabel!
+    
     @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var distanceLabel: UILabel!
+    
+    @IBOutlet weak var callContactButton: UIButton!
+    
+    
     
     enum UIRouteState {
         case notChosenRoute
@@ -48,8 +54,14 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     var lastTappedRoutePolyline = GMSPolyline()
     var chosenRoute = [String:Any]()
-    var directionsList = [String]()
-    var polylineList = [GMSPolyline]()
+    var directionsList = [(description: String, endLocation: CLLocationCoordinate2D)]()
+    var polylineDict = [GMSPolyline:NSDictionary]()
+    
+    // list of endpoints for each google map gps direction instruction
+    var regionCenters = [CLCircularRegion]()
+    
+    var contactName = ""
+    var contactNumber = ""
     
 // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now. It replaces polylineList in function
 //    var markersPerRoute = [String:[Any]]()
@@ -114,7 +126,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
 //        }
         
         //remove the paths you didn't choose (keeps all crimes on screen)
-        for polyline in polylineList {
+        for polyline in polylineDict.keys {
             if polyline == tappedPolyline{
                 polyline.strokeColor = UIColor.blue
             } else {
@@ -122,16 +134,36 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             }
         }
         
-        let directionsListTuples = getDirectionsListFromRoute(route: chosenRoute)
+        // put all directions onto a list (display all to user)
+        getDirectionsListFromRoute(route: chosenRoute)
         
         //THIS IS JUST A TES NORMALLY THE USER NEEDS TO SELECT A PATH BEFORE THIS GETS DISPLAYED
         //THERE SHOULD BE AN INTERMEDIATE UI FOR THE PATH SELECTION STAGE
-        if (directionsListTuples.count > 0) {
-            //the first part of the tuple (i.e. element 0) is the string description of the direction
-            nextDirectionTextView.text = directionsListTuples[0].0.htmlToString
+        if (self.directionsList.count > 0) {
             
-            //NEED TO MAKE IT SO THE NEXT DIRECTION UPDATES WHEN THE USER PASSES GETS TO THE END LOCATION OF THIS LEG (STORED AS SECOND TUPLE VAL IN THE DIRECTIONSLIST ARRAY) VIA GPS. THIS ISN'T HANDLED HERE THIS IS JUST SETUP.
+            //the first part of the tuple (i.e. element 0) is the string description of the direction
+            nextDirectionTextView.text = self.directionsList.first?.description
+            
+            // create a region for each endpoint in every google maps path step
+            for checkpoint in directionsList {
+                let region = CLCircularRegion(center: checkpoint.endLocation,
+                                              radius: CLLocationDistance(2),
+                                              identifier: checkpoint.description)
+                regionCenters.append(region)
+                self.locationManager.startMonitoring(for: region)
+            }
+            
+            print("\n@@@@@@@@@@@@@@@@@@")
+            for region in regionCenters {
+                print(region.identifier)
+            }
+            print("@@@@@@@@@@@@@@@@@@")
+
+            
         }
+        
+        
+        
     }
     
     @IBAction func didTapGetPath(_ sender: Any) {
@@ -172,9 +204,62 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     /// Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
         super.viewDidLoad()
+        db = Firestore.firestore()
+        
+        // get user auth to collect location data
+        self.locationManager.requestWhenInUseAuthorization()
+        self.locationManager.requestAlwaysAuthorization()
+        
+        regionCenters.removeAll()
+        for region in locationManager.monitoredRegions {
+            locationManager.stopMonitoring(for: region)
+        }
+        
         getCurrLocation()
+        
+        // user's live location
+        let currLocation = locationManager.location
+        let userLat = currLocation!.coordinate.latitude
+        let userLong = currLocation!.coordinate.longitude
+
+        /* NOTE: for this current location to work, go to the menu bar and
+         click Debug > Simulate Location > Add GPX File to Workspace...
+         then pick the oldenborg.gpx file in the directory (or put your own
+         coordinates) */
+        
+        let camera = GMSCameraPosition(latitude: userLat,
+                                       longitude: userLong, zoom: 12)
+        
+        // various google maps preferences
+        self.googleMaps.camera = camera
         setRouteUI(routeStatus: .notChosenRoute)
         nextDirectionTextView.isEditable = false
+        
+        // adding call emergency contact button
+        //callContactButton.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+        callContactButton.isHidden = false
+        
+    }
+    
+    func getEmergencyContactPhone() {
+        let emergencyContactRef = db.collection("users").document(Auth.auth().currentUser!.uid)
+        emergencyContactRef.getDocument { (document, error) in
+            if let document = document, document.exists {
+                self.contactName = (document.get("contactName") as? String)!
+                self.contactNumber = (document.get("number") as? String)!
+            } else {
+                print("Document does not exist")
+            }
+        }
+    }
+    
+    @IBAction func callContact(_ sender: Any) {
+        getEmergencyContactPhone()
+        
+        if let url = URL(string: "tel://\(self.contactNumber)"),
+        UIApplication.shared.canOpenURL(url) {
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
     }
     
     /// Sets the current location to the starting location
@@ -182,7 +267,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBAction func myLocationUsed(_ sender: UIButton) {
         
         // get my location again
-        let myLocationCoord = getCurrLocation()!.coordinate
+        let myLocationCoord = locationManager.location!.coordinate
         startLocationTextField.text = "Your location"
         if (locationStart != nil) {
             locationStart.map = nil
@@ -204,12 +289,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     
     /// Gets the user's real current location
-    func getCurrLocation() -> CLLocation! {
-        
-        // get user auth to collect location data
-        self.locationManager.requestWhenInUseAuthorization()
-        self.locationManager.requestAlwaysAuthorization()
-        
+    func getCurrLocation() {
+
         // show user location if auth provided
         if CLLocationManager.locationServicesEnabled() {
             locationManager.delegate = self
@@ -217,8 +298,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             locationManager.startUpdatingLocation()
             locationManager.startMonitoringSignificantLocationChanges()
         }
-        
-        return locationManager.location
+
     }
 
     // location manager delegates
@@ -229,20 +309,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     // location manager delegates continued
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
-        // user's live location
-        let currLocation = locations.last
-        let userLat = currLocation!.coordinate.latitude
-        let userLong = currLocation!.coordinate.longitude
-        
-        /* NOTE: for this current location to work, go to the menu bar and
-         click Debug > Simulate Location > Add GPX File to Workspace...
-         then pick the oldenborg.gpx file in the directory (or put your own
-         coordinates) */
-        let camera = GMSCameraPosition(latitude: userLat,
-                                       longitude: userLong, zoom: 12)
-        
-        // various google maps preferences
-        self.googleMaps.camera = camera
         self.googleMaps.delegate = self
         self.googleMaps.isMyLocationEnabled = true
         self.googleMaps.settings.myLocationButton = true
@@ -251,19 +317,70 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
 
     }
     
+    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        
+        print("\n++++++++++++++++++++")
+        print("entering \(region.identifier)")
+        print("++++++++++++++++++++")
+        
+        // stop monitoring the last passed location
+        self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
+        
+        // start monitoring the next one
+        // TODO:
+        // 1) should i monitor all at once
+        // 2) stop when this the last region has been walked to
+        nextDirectionTextView.text = regionCenters.first!.identifier
+        print("\n***************")
+        print(regionCenters.first!.identifier)
+        print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
+        print("***************")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
+        let circularRegion = region as! CLCircularRegion
+        print("\n======================")
+        print("monitoring \(region.identifier)")
+        print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
+        print("======================")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        let circularRegion = region as! CLCircularRegion
+        print("\n-----------------------")
+        print("monitoring \(region.identifier)")
+        print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
+        print("-----------------------")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
+        print("oh no!")
+        print(error)
+    }
+    
     func mapView(_ mapView: GMSMapView, didTap overlay: GMSOverlay) {
-           if let routePolyline = overlay as? GMSPolyline {
-                if (routePolyline == lastTappedRoutePolyline) {
-                    routePolyline.strokeWidth /= 2
-                    return
-                }
-                if (lastTappedRoutePolyline.path != nil) {
-                    lastTappedRoutePolyline.strokeWidth /= 2
-                }
-                routePolyline.strokeWidth *= 2
-                lastTappedRoutePolyline = routePolyline
+        if let routePolyline = overlay as? GMSPolyline {
+            if (routePolyline == lastTappedRoutePolyline) {
+                routePolyline.strokeWidth /= 2
+                return
+            }
+            if (lastTappedRoutePolyline.path != nil) {
+                lastTappedRoutePolyline.strokeWidth /= 2
+            }
+            routePolyline.strokeWidth *= 2
+            lastTappedRoutePolyline = routePolyline
+        
+            // change displayed distance and duration of tapped path
+            distanceLabel.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+            timeLabel.backgroundColor = UIColor.white.withAlphaComponent(0.7)
+            distanceLabel.isHidden = false
+            timeLabel.isHidden = false
+            distanceLabel.text =
+                polylineDict[routePolyline]!.value(forKey: "distance") as? String
+            timeLabel.text =
+                polylineDict[routePolyline]!.value(forKey: "duration") as? String
                 
-                chosenRoute = routePolyline.userData as! [String:Any]
+            chosenRoute = routePolyline.userData as! [String:Any]
            }
        }
     
@@ -300,7 +417,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         return false
     }
     
-    
     /// When start location is tapped, open search location
     /// Note: GMSAutocomplete only shows 5 at a time
     /// https://stackoverflow.com/questions/31761124/how-to-obtain-more-than-5-results-from-google-maps-places-autocomplete
@@ -331,7 +447,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // change text color
         UISearchBar.appearance().setTextColor(color: UIColor.black)
         
-        self.locationManager.stopUpdatingLocation()
         self.present(autoCompleteController, animated: true, completion: nil)
     }
     
@@ -363,6 +478,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 currentToOrigin.isHidden = false
                 getPathButton.isHidden = false
                 timeLabel.isHidden = true
+                distanceLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = true
                 exitRouteButton.isHidden = true
@@ -376,6 +492,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 currentToOrigin.isHidden = true
                 getPathButton.isHidden = true
                 timeLabel.isHidden = true
+                distanceLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = true
                 exitRouteButton.isHidden = false
@@ -389,6 +506,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 currentToOrigin.isHidden = true
                 getPathButton.isHidden = true
                 timeLabel.isHidden = true
+                distanceLabel.isHidden = true
                 
                 nextDirectionTextView.isHidden = false
                 exitRouteButton.isHidden = false
@@ -399,39 +517,30 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
          }
     }
     
-    // given an input dictionary containing the route info (parsed from JSON), parse the directions info
-    func getDirectionsListFromRoute(route:[String:Any]) -> [(String, CLLocationCoordinate2D)]{
-        var directionsList = [(description: String, endLocation: CLLocationCoordinate2D)]()
+
+    func getDirectionsListFromRoute(route:[String:Any]) {
+    
+        // the legs of the path (since we use no waypoints, there's only 1 leg)
         let legs:[[String:Any]] = (route as NSDictionary).value(forKey: "legs") as! [[String:Any]]
-        
-        // loop through all the legs (segments) making up the route
-        for leg in legs {
-            let steps:[[String:Any]] = (leg as NSDictionary).value(forKey: "steps") as! [[String:Any]]
-            for step in steps {
-                
-                // parse info from JSON
-                let htmlDirections:String = (step as NSDictionary).value(forKey: "html_instructions") as! String
-                let distanceInfo:NSDictionary = (step as NSDictionary).value(forKey: "distance") as! NSDictionary
-                let distanceDescription:String = distanceInfo.value(forKey: "text") as! String
-                
-                // get the coordintes of the destination
-                let endLocationInfo:NSDictionary = (step as NSDictionary).value(forKey: "end_location") as! NSDictionary
-                let lat:Double = endLocationInfo.value(forKey: "lat") as! Double
-                let lng:Double = endLocationInfo.value(forKey: "lat") as! Double
-                let coords = CLLocationCoordinate2D(latitude: lat, longitude: lng)
-                
-                // format the directions description
-                let directionsDescription = htmlDirections.htmlToString + " for "
-                
-                // save the description of the directions as well as their coordinates. description is for the use to see, coordinates are for further processing with live GPS
-                directionsList.append((description: directionsDescription + distanceDescription, endLocation: coords))
-                
-                // build the list of directions for use in the directions list VC
-                self.directionsList.append(directionsDescription + distanceDescription)
-            }
+        let leg = legs.first!
+    
+        let steps:[[String:Any]] = (leg as NSDictionary).value(forKey: "steps") as! [[String:Any]]
+        for step in steps {
+            let htmlDirections:String = (step as NSDictionary).value(forKey: "html_instructions") as! String
+            
+            let distanceInfo:NSDictionary = (step as NSDictionary).value(forKey: "distance") as! NSDictionary
+            let distanceDescription:String = distanceInfo.value(forKey: "text") as! String
+            
+            let endLocationInfo:NSDictionary = (step as NSDictionary).value(forKey: "end_location") as! NSDictionary
+            let lat:Double = endLocationInfo.value(forKey: "lat") as! Double
+            let lng:Double = endLocationInfo.value(forKey: "lng") as! Double
+            let coords = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+            
+            let directionsDescription = htmlDirections.htmlToString + " for "
+            
+            // build the list of directions for use in the directions list VC
+            self.directionsList.append((description: directionsDescription + distanceDescription, endLocation: coords))
         }
-        
-        return directionsList
     }
     
     func radiansToDegrees(_ radians: Double) -> Double {
@@ -482,7 +591,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         return center
     }
     
-    //https://stackoverflow.com/questions/21130433/generate-a-random-uicolor
+    // https://stackoverflow.com/questions/21130433/generate-a-random-uicolor
     func randomColor() -> UIColor {
         let red = Double(arc4random_uniform(256)) / 255.0
         let green = Double(arc4random_uniform(256)) / 255.0
@@ -570,6 +679,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     func drawAllPathsWithCompletion(from source: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D, completion: @escaping  (Array<Any>) -> Void) {
+        
+        // get path from origin to destination using google maps API
         let origin = "\(source.latitude),\(source.longitude)"
         let destination = "\(destination.latitude),\(destination.longitude)"
         
@@ -589,7 +700,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 print("error in getting paths!", error?.localizedDescription)
             } else {
                 do {
+                    // get jsonified string of data from API call
                     let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+                    
+                    // parse the information about routes
                     let routes = json["routes"] as! [[String:Any]]
                     DispatchQueue.main.async {
                         for route in routes {
@@ -610,26 +724,26 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                             
                             // dictionary for time and distance info
                             let leg = (routeInfo.value(forKey: "legs") as! [[String:Any]]).first!
-                            let duration =
+                            var duration =
                                 (leg["duration"] as! NSDictionary).value(forKey: "text") as! String
                             let distance =
                                 (leg["distance"] as! NSDictionary).value(forKey: "text") as! String
                             
-                            // display the time and distance labels
-                            /*
-                            TODO: put these in a dictionary so that these
-                            labels change when we click on paths
-                            */
-                            self.timeLabel.text = duration
-                            self.timeLabel.isHidden = false
-                            self.distanceLabel.text = distance
-                            self.distanceLabel.isHidden = false
+                            // change "hours" to "hrs"
+                            if let i = duration.firstIndex(of: "o") {
+                                let j = duration.firstIndex(of: "u")!
+                                duration.removeSubrange(i ... j)
+                            }
+                            
+                            // save to hashmap to make label displaying faster
+                            self.polylineDict[polyline] =
+                                ["duration" : duration,
+                                 "distance" : distance] as NSDictionary
 
                             let bounds = GMSCoordinateBounds(path: path!)
                             self.googleMaps!.animate(with: GMSCameraUpdate.fit(bounds, withPadding: 30.0))
-
                             polyline.map = self.googleMaps
-                            self.polylineList.append(polyline)
+
                         }
                         completion(routes)
                     }
@@ -651,6 +765,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         let profileButton = UIBarButtonItem(title: "Go to Profile", style: UIBarButtonItem.Style.plain, target: self, action:#selector(profileButtonTapped))
         navigationItem.leftBarButtonItem = logoutButton
         navigationItem.rightBarButtonItem = profileButton
+        
+
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?)
@@ -662,6 +778,27 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             // or something like that to pass the current direction the user is on, to highlight the correct direction
         }
     }
+
+//   func getContactNumber() {
+//       let emergencyContactRef = db.collection("users").document(Auth.auth().currentUser!.uid)
+//       emergencyContactRef.getDocument { (document, error) in
+//       if let document = document, document.exists {
+//           self.contactName = (document.get("contactName") as? String)!
+//           self.contactNumber = (document.get("number") as? String)!
+//       } else {
+//           print("Document does not exist")
+//       }
+//        }
+//    }
+//    
+//    @IBAction func callContact(_ sender: Any) {
+//        getContactNumber()
+//        
+//        if let url = URL(string: "tel://\(self.contactNumber)"),
+//            UIApplication.shared.canOpenURL(url) {
+//            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+//        }
+//    }
 }
 
 // GMS Auto Complete Delegate for autocomplete search location
@@ -683,7 +820,7 @@ extension MapViewController: GMSAutocompleteViewControllerDelegate {
         
         // the marker to drop on the map
         var marker: GMSMarker!
-        
+    
         // cases for camera zoom depending on if start or end was just specified
         switch locationSelected {
         case .startLocation:

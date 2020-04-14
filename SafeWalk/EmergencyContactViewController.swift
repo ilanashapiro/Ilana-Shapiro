@@ -10,7 +10,7 @@ import UIKit
 import Firebase
 
 protocol EmergencyContactViewControllerDelegate: class {
-    func updateEmergencyContact(_ controller: EmergencyContactViewController, name: String!, number: String!)
+    func updateEmergencyContact(_ controller: EmergencyContactViewController, contactName: String!, number: String!)
 }
 class EmergencyContactViewController: UIViewController {
     var db:Firestore!
@@ -38,18 +38,18 @@ class EmergencyContactViewController: UIViewController {
             return
         }
         
-        let name = emergencyContactNameTextField.text!
+        let contactName = emergencyContactNameTextField.text!
         let number = emergencyContactNumberTextField.text!
         
         let emergencyContactData: [String: Any] = [
-            "name": name,
+            "contactName": contactName,
             "number": number,
         ]
         
         
         // update Firebase and Profile VC
         updateEmergencyContactData(data: emergencyContactData)
-        delegate?.updateEmergencyContact(self, name: name, number: number)
+        delegate?.updateEmergencyContact(self, contactName: contactName, number: number)
     }
     
     override func viewDidLoad() {
@@ -69,17 +69,6 @@ class EmergencyContactViewController: UIViewController {
             }
         }
     }
-    
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 }
 
 extension String {

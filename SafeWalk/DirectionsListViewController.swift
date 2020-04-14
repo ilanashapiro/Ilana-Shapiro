@@ -7,10 +7,11 @@
 //
 
 import UIKit
+import GoogleMaps
 
 class DirectionsListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
-    var directionsList = [String]()
+    var directionsList =  [(description: String, endLocation: CLLocationCoordinate2D)]()
     var currentDirectionIndex = 0
     
     override func viewDidLoad() {
@@ -28,7 +29,7 @@ class DirectionsListViewController: UIViewController, UITableViewDelegate, UITab
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "directionsTableViewCell", for: indexPath) as! DirectionsTableViewCell
-        let direction = directionsList[indexPath.row]
+        let direction = directionsList[indexPath.row].description
         cell.directionsLabel.text = direction
         
         //set the current direction tableviewcell to yellow
