@@ -11,8 +11,8 @@ import Firebase
 
 class ProfileViewController: UIViewController, EmergencyContactViewControllerDelegate {
     
-    func updateEmergencyContact(_ controller: EmergencyContactViewController, name: String!, number: String!) {
-        self.emergencyContactNameLabel.text = name
+    func updateEmergencyContact(_ controller: EmergencyContactViewController, contactName: String!, number: String!) {
+        self.emergencyContactNameLabel.text = contactName
         self.emergencyContactNumberLabel.text = formatPhoneNumber(number: number)
         
     controller.navigationController?.popViewController(animated: true)
@@ -26,7 +26,7 @@ class ProfileViewController: UIViewController, EmergencyContactViewControllerDel
     
     @IBAction func deleteAccountAction(_ sender: Any) {
         let user = Auth.auth().currentUser
-        let alert = UIAlertController(title: "You must reauthenticate before deleting your account", message: nil, preferredStyle: .alert)
+        let alert = UIAlertController(title: "You must reauthenticate before deleting your account (type your email, press return, then type your password)", message: nil, preferredStyle: .alert)
         alert.addTextField()
         alert.addTextField { (password) in
             password.isSecureTextEntry = true
@@ -77,9 +77,11 @@ class ProfileViewController: UIViewController, EmergencyContactViewControllerDel
         emailLabel.text = Auth.auth().currentUser?.email
         
         
-//        if SignUpViewController().contactNameTextField != nil {
-//            emergencyContactNameLabel.text = SignUpViewController().contactNameTextField.text
-//        }
+    
+        
+        
+//        emergencyContactNameLabel.text = SignUpViewController().contactNameTextField.text
+//        
 //        
 //        if SignUpViewController().contactPhoneTextField != nil {
 //            emergencyContactNumberLabel.text = SignUpViewController().contactPhoneTextField.text
@@ -92,7 +94,7 @@ class ProfileViewController: UIViewController, EmergencyContactViewControllerDel
         let emergencyContactRef = db.collection("users").document(Auth.auth().currentUser!.uid)
         emergencyContactRef.getDocument { (document, error) in
             if let document = document, document.exists {
-                self.emergencyContactNameLabel.text = document.get("name") as? String
+                self.emergencyContactNameLabel.text = document.get("contactName") as? String
                 let number = (document.get("number") as? String)
                 guard number != nil else { return }
                 self.emergencyContactNumberLabel.text = self.formatPhoneNumber(number: number)
