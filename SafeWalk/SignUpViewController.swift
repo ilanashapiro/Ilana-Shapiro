@@ -67,21 +67,17 @@ class SignUpViewController: UIViewController {
                     
                 }
                 
-//                let contactName = self.contactNameTextField.text!
-//                let number = self.contactPhoneTextField.text!
+                let contactName = self.contactNameTextField.text!
+                let number = self.contactPhoneTextField.text!
                 
                 let emergencyContactData: [String: Any] = [
-                    "contactName": self.contactNameTextField!.text ?? "No contact name provided",
-                    "number": self.contactPhoneTextField!.text ?? "No contact phone provided",
+                    "contactName": contactName,
+                    "number": number,
                 ]
                 
                 
                 // update Firebase
-                // NEED TO UPDATE FIREBASE PERMISSIONS FOR THIS TO WORK !!!
-                // self.updateEmergencyContactData(data: emergencyContactData)
-                
-                // will eventually update profile VC
-//                delegate?.updateEmergencyContact(self, contactName: contactName, number: number)
+                self.updateEmergencyContactData(data: emergencyContactData)
                 
             }
         }
@@ -104,4 +100,5 @@ class SignUpViewController: UIViewController {
             }
         }
     }
+    
 }

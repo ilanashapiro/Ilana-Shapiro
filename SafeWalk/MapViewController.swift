@@ -211,22 +211,16 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         // user's live location
         let currLocation = locationManager.location
-        // uncomment when working !!!
-//        let userLat = currLocation!.coordinate.latitude
-//        let userLong = currLocation!.coordinate.longitude
-//
+        let userLat = currLocation!.coordinate.latitude
+        let userLong = currLocation!.coordinate.longitude
+
         /* NOTE: for this current location to work, go to the menu bar and
          click Debug > Simulate Location > Add GPX File to Workspace...
          then pick the oldenborg.gpx file in the directory (or put your own
          coordinates) */
         
-        // uncomment this when working !!!!!
-//        let camera = GMSCameraPosition(latitude: userLat,
-//                                       longitude: userLong, zoom: 12)
-        
-        // delete this when above is working !!
-        let camera = GMSCameraPosition(latitude: 37.8719,
-        longitude: -122.2585, zoom: 12)
+        let camera = GMSCameraPosition(latitude: userLat,
+                                       longitude: userLong, zoom: 12)
         
         // various google maps preferences
         self.googleMaps.camera = camera
