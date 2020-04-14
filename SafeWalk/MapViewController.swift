@@ -151,16 +151,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                               identifier: checkpoint.description)
                 regionCenters.append(region)
                 self.locationManager.startMonitoring(for: region)
-                region.notifyOnEntry = true
             }
             
-            // start monitoring the endpoint of the first instruction
-            print("***************")
-            print(regionCenters.first!.identifier)
-            print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
-            print("***************")
+            print("\n@@@@@@@@@@@@@@@@@@")
+            for region in regionCenters {
+                print(region.identifier)
+            }
+            print("@@@@@@@@@@@@@@@@@@")
+
             
-            //NEED TO MAKE IT SO THE NEXT DIRECTION UPDATES WHEN THE USER PASSES GETS TO THE END LOCATION OF THIS LEG (STORED AS SECOND TUPLE VAL IN THE DIRECTIONSLIST ARRAY) VIA GPS. THIS ISN'T HANDLED HERE THIS IS JUST SETUP.
         }
         
         
@@ -320,7 +319,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         
-        print("++++++++++++++++++++")
+        print("\n++++++++++++++++++++")
         print("entering \(region.identifier)")
         print("++++++++++++++++++++")
         
@@ -332,21 +331,25 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // 1) should i monitor all at once
         // 2) stop when this the last region has been walked to
         nextDirectionTextView.text = regionCenters.first!.identifier
-        print("***************")
+        print("\n***************")
         print(regionCenters.first!.identifier)
         print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
         print("***************")
     }
     
     func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
-        print("======================")
+        let circularRegion = region as! CLCircularRegion
+        print("\n======================")
         print("monitoring \(region.identifier)")
+        print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
         print("======================")
     }
     
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        print("-----------------------")
-        print("exited \(region.identifier)")
+        let circularRegion = region as! CLCircularRegion
+        print("\n-----------------------")
+        print("monitoring \(region.identifier)")
+        print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
         print("-----------------------")
     }
     
