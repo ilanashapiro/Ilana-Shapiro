@@ -16,7 +16,7 @@ enum Location {
     case destinationLocation
 }
 
-class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManagerDelegate {
+class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManagerDelegate, AppDelegateLocationUpdateDelegate {
     var db:Firestore!
 
     @IBOutlet weak var googleMaps: GMSMapView!
@@ -34,8 +34,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     @IBOutlet weak var distanceLabel: UILabel!
     
     @IBOutlet weak var callContactButton: UIButton!
-    
-    
     
     enum UIRouteState {
         case notChosenRoute
@@ -62,6 +60,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     var contactName = ""
     var contactNumber = ""
+    
+    // for following user's current location
+    var cameraupdate:Bool = false
     
 // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now. It replaces polylineList in function
 //    var markersPerRoute = [String:[Any]]()
@@ -202,10 +203,13 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.getCrimesAlongPath(path: path, startDateTime: yearAgoDateString, endDateTime: currentDateString, tolerance: 1, units: "km")
     }
   
-    /// Creates the page that is shown when loaded; contains map and search bars
+    // Creates the page that is shown when loaded; contains map and search bars
     override func viewDidLoad() {
         super.viewDidLoad()
         db = Firestore.firestore()
+        
+        // tracking user's current location
+        AppDelegate.SharedDelegate().appDelegateLocationUpdateDelegate = self
         
         // get user auth to collect location data
         self.locationManager.requestWhenInUseAuthorization()
@@ -242,6 +246,33 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
     }
     
+    // for getting user's current location updates
+    override func viewDidAppear(_ animated: Bool) {
+        googleMaps.isMyLocationEnabled = true
+        googleMaps.settings.myLocationButton = true
+        
+        if AppDelegate.SharedDelegate().currentLocation != nil{
+            cameraupdate = true
+            let camera = GMSCameraPosition.camera(withLatitude: AppDelegate.SharedDelegate().currentLocation.coordinate.latitude,
+                                                  longitude: AppDelegate.SharedDelegate().currentLocation.coordinate.longitude,
+                                                  zoom: 16)
+            googleMaps.camera = camera
+        }
+    }
+    
+    // for getting user's current location updates
+    func currentLocationUpdate(_ location: CLLocation) {
+        
+        if cameraupdate == false{
+            cameraupdate = true
+            let camera = GMSCameraPosition.camera(withLatitude: AppDelegate.SharedDelegate().currentLocation.coordinate.latitude,
+                                                  longitude: AppDelegate.SharedDelegate().currentLocation.coordinate.longitude,
+                                                  zoom: 16)
+            googleMaps.camera = camera
+        }
+
+    }
+    
     func getEmergencyContactPhone() {
         let emergencyContactRef = db.collection("users").document(Auth.auth().currentUser!.uid)
         emergencyContactRef.getDocument { (document, error) in
@@ -254,6 +285,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         }
     }
     
+    // call the user's emergency contact at any time by tapping this button
+    // note that this will not work from the simulator, but should work on an actual device
     @IBAction func callContact(_ sender: Any) {
         getEmergencyContactPhone()
         
@@ -263,8 +296,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         }
     }
     
-    /// Sets the current location to the starting location
-    /// - Parameter sender: the "mylocation" button clicked
+    // Sets the current location to the starting location
+    // - Parameter sender: the "mylocation" button clicked
     @IBAction func myLocationUsed(_ sender: UIButton) {
         
         // get my location again
@@ -414,10 +447,10 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         return false
     }
     
-    /// When start location is tapped, open search location
-    /// Note: GMSAutocomplete only shows 5 at a time
-    /// https://stackoverflow.com/questions/31761124/how-to-obtain-more-than-5-results-from-google-maps-places-autocomplete
-    /// - Parameter sender: the location entered by the user
+    // When start location is tapped, open search location
+    // Note: GMSAutocomplete only shows 5 at a time
+    // https://stackoverflow.com/questions/31761124/how-to-obtain-more-than-5-results-from-google-maps-places-autocomplete
+    // - Parameter sender: the location entered by the user
     @IBAction func openStartLocation(_ sender: UITextField) {
         let autoCompleteController = GMSAutocompleteViewController()
         autoCompleteController.delegate = self
