@@ -152,16 +152,15 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                               identifier: checkpoint.description)
                 regionCenters.append(region)
                 self.locationManager.startMonitoring(for: region)
-                region.notifyOnEntry = true
             }
             
-            // start monitoring the endpoint of the first instruction
-            print("***************")
-            print(regionCenters.first!.identifier)
-            print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
-            print("***************")
+            print("\n@@@@@@@@@@@@@@@@@@")
+            for region in regionCenters {
+                print(region.identifier)
+            }
+            print("@@@@@@@@@@@@@@@@@@")
+
             
-            //NEED TO MAKE IT SO THE NEXT DIRECTION UPDATES WHEN THE USER PASSES GETS TO THE END LOCATION OF THIS LEG (STORED AS SECOND TUPLE VAL IN THE DIRECTIONSLIST ARRAY) VIA GPS. THIS ISN'T HANDLED HERE THIS IS JUST SETUP.
         }
         
         
@@ -353,7 +352,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         
-        print("++++++++++++++++++++")
+        print("\n++++++++++++++++++++")
         print("entering \(region.identifier)")
         print("++++++++++++++++++++")
         
@@ -365,21 +364,25 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // 1) should i monitor all at once
         // 2) stop when this the last region has been walked to
         nextDirectionTextView.text = regionCenters.first!.identifier
-        print("***************")
+        print("\n***************")
         print(regionCenters.first!.identifier)
         print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
         print("***************")
     }
     
     func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
-        print("======================")
+        let circularRegion = region as! CLCircularRegion
+        print("\n======================")
         print("monitoring \(region.identifier)")
+        print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
         print("======================")
     }
     
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        print("-----------------------")
-        print("exited \(region.identifier)")
+        let circularRegion = region as! CLCircularRegion
+        print("\n-----------------------")
+        print("monitoring \(region.identifier)")
+        print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
         print("-----------------------")
     }
     
@@ -499,6 +502,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         performSegue(withIdentifier: "profileSegue", sender: self)
     }
     
+    // set the UI based on the user's route status (before selecting route, in the process of selecting route, on route)
     func setRouteUI(routeStatus:UIRouteState) {
          switch routeStatus {
              case .notChosenRoute:
@@ -546,8 +550,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
          }
     }
     
+
     func getDirectionsListFromRoute(route:[String:Any]) {
-        
+    
         // the legs of the path (since we use no waypoints, there's only 1 leg)
         let legs:[[String:Any]] = (route as NSDictionary).value(forKey: "legs") as! [[String:Any]]
         let leg = legs.first!
@@ -569,7 +574,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             // build the list of directions for use in the directions list VC
             self.directionsList.append((description: directionsDescription + distanceDescription, endLocation: coords))
         }
-    
     }
     
     func radiansToDegrees(_ radians: Double) -> Double {
@@ -647,31 +651,38 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     func getCrimesAlongPath(path: GMSPath, startDateTime: String, endDateTime: String, tolerance: Double, units: String) {
         let crimeOMeterAPIKey = "ApFDRiRemN2ONnPPgtemu85l8unixUs94HE7zFf4"
         
+        // get start and end coords from the path
         let startCoordinates = path.coordinate(at: 0)
         let endCoordinates = path.coordinate(at: path.count() - 1)
         
+        // get the midpoint of the path
         let midpoint = getMidpoint(startCoordinates: startCoordinates, endCoordinates: endCoordinates)
         let radius = getDistanceBetween(startCoordinates: midpoint, endCoordinates: endCoordinates, unit: units)
+        
+        // build the URL string based on the format specified by Crime-o-meter
         let urlString = "https://api.crimeometer.com/v1/incidents/raw-data?lat=\(midpoint.latitude)&lon=\(midpoint.longitude)&distance=\(radius)\(units)&datetime_ini=\(startDateTime)&datetime_end=\(endDateTime)&page=1"
-
+        
+        // add the HTTP headers, as specified by Crime-o-Meter
         let url = URL(string: urlString)
         var urlRequest = URLRequest(url: url!)
         urlRequest.addValue(crimeOMeterAPIKey, forHTTPHeaderField: "x-api-key")
         urlRequest.addValue("application/json", forHTTPHeaderField: "content-type")
         
-        
+        // execute the network request (asynchronously)
         URLSession.shared.dataTask(with: urlRequest, completionHandler: {
             (data, response, error) in
             if (error != nil) {
                 print("error")
             } else {
                 do {
-                    let json = try JSONSerialization.jsonObject(with: data!, options:.allowFragments) as! [String : AnyObject]
+                    let json = try JSONSerialization.jsonObject(with: data!, options:[]) as! [String : AnyObject]
                     print(json)
                     if let incidentsArr = json["incidents"] as? Array<Any> {
                         print("NUMINCIDENTS", incidentsArr.count)
                         for incident in incidentsArr {
                             if let incidentDict = incident as? Dictionary<String, Any> {
+                                
+                                // parse incident data from the JSON
                                 let incidentLatitude = incidentDict["incident_latitude"] as! Double
                                 let incidentLongitude = incidentDict["incident_longitude"] as! Double
                                 let incidentDescription = incidentDict["incident_offense_detail_description"] as! String
@@ -680,14 +691,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                                 let incidentCoords = CLLocationCoordinate2D(latitude: incidentLatitude, longitude: incidentLongitude)
                                 let toleranceDist = CLLocationDistance(self.getMeters(dist: tolerance, units: units))
                                 if (GMSGeometryIsLocationOnPathTolerance(incidentCoords, path, true, toleranceDist)) {
-                                    // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now.
-//                                    if (self.markersPerRoute[path.encodedPath()] == nil) {
-//                                        self.markersPerRoute[path.encodedPath()] = [incidentDict]
-//                                    } else  {
-//                                        self.markersPerRoute[path.encodedPath()]!.append(incidentDict)
-//                                    }
-                                    //instead, just save all the polylines (in drawAllPathsWithCompletion) to delete them all later and the one you picked will be redrawn in a different method
-                                   
+                                    // execute UI on the main thread
                                     DispatchQueue.main.async {
                                         let marker = GMSMarker(position: incidentCoords)
                                         marker.title = incidentTitle
@@ -712,12 +716,17 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // get path from origin to destination using google maps API
         let origin = "\(source.latitude),\(source.longitude)"
         let destination = "\(destination.latitude),\(destination.longitude)"
+        
+        // get the API key stored in AppDelegate
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let apiKey = appDelegate.MAPS_API_KEY
         
-        // https://developers.google.com/maps/documentation/directions/intro
+        
+        // build the URL string as specified by: https://developers.google.com/maps/documentation/directions/intro
         let urlString = "https://maps.googleapis.com/maps/api/directions/json?origin=\(origin)&destination=\(destination)&mode=walking&alternatives=true&key=\(apiKey)"
         let url = URL(string: urlString)
+        
+        // execute the URL request asynchronously
         URLSession.shared.dataTask(with: url!, completionHandler: {
             (data, response, error) in
             if (error != nil) {
