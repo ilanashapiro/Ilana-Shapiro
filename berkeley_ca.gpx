@@ -16,13 +16,13 @@
         <name>UC Berkeley Campus</name>
         <time>2020-01-01T9:00:00Z</time>
     </wpt>
-    <wpt lat="37.8759" lon="122.2501">
-        <name>Lawrence Berkeley National Lab</name>
-        <time>2020-01-01T9:10:00Z</time>
+    <wpt lat="37.8719" lon="-122.2585">
+        <name>UC Berkeley Campus</name>
+        <time>2020-01-01T9:00:05Z</time>
     </wpt>
-    <wpt lat="37.8619" lon="122.2533">
-        <name>Sack's Coffee Shop</name>
-        <time>2020-01-01T9:25:00Z</time>
+    <wpt lat="37.8759" lon="-122.2501">
+        <name>Lawrence Berkeley National Lab</name>
+        <time>2020-01-01T9:00:20Z</time>
     </wpt>
     
 </gpx>

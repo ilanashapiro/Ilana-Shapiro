@@ -107,6 +107,17 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         endMarker.title = "END"
         endMarker.map = googleMaps
         
+        // when user picks their path to start walking, send a text to emergency contact
+        // currently, this "naive text" is an alert to the walker
+        let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you started walking.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        self.present(alert, animated: true)
+        
+        // start monitoring the walker's destination location as a region
+        // should trigger alertWhenArrivedAtDestination function when user arrives
+        monitorRegionAtDestination(center: selectedDestinationLocation, identifier: "Destination Location")
+    
+        
         // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now.
         // plot the crimes that are in the tolerance of the given path only
 //        for incident in markersPerRoute[points! as! String]! {
@@ -159,12 +170,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
                 print(region.identifier)
             }
             print("@@@@@@@@@@@@@@@@@@")
-
-            
         }
-        
-        
-        
     }
     
     @IBAction func didTapGetPath(_ sender: Any) {
@@ -271,13 +277,31 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         }
     }
     
+    // set up destination location as a region to monitor
+    // https://developer.apple.com/documentation/corelocation/monitoring_the_user_s_proximity_to_geographic_regions
+    func monitorRegionAtDestination(center: CLLocationCoordinate2D, identifier: String) {
+        // Make sure the devices supports region monitoring.
+        if CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
+            print("REACHED MONITOR REGION AT DESTINATION")
+            // Register the region.
+            // when distance from destination is 5 meters
+            let distFromDestination = 5.0
+            let region = CLCircularRegion(center: center,
+                 radius: distFromDestination, identifier: identifier)
+            region.notifyOnEntry = true
+            region.notifyOnExit = false
+            locationManager.startMonitoring(for: region)
+        }
+    }
+    
+    
     // if user strays from path, call emergency contact
     func leftPathCallContact(_ location: CLLocation) {
         if lastTappedRoutePolyline.path != nil {
             let currentLocation = CLLocationCoordinate2DMake(AppDelegate.SharedDelegate().currentLocation.coordinate.latitude, AppDelegate.SharedDelegate().currentLocation.coordinate.longitude)
             
-            // a boolean variable - true if on path or within a tolerance of 5 meters
-            let onPath = GMSGeometryIsLocationOnPathTolerance(currentLocation, lastTappedRoutePolyline.path!, true, 5)
+            // a boolean variable - true if on path or within a tolerance of 15 meters
+            let onPath = GMSGeometryIsLocationOnPathTolerance(currentLocation, lastTappedRoutePolyline.path!, true, 15)
             
             print("-----------------------------------------------------------")
             
@@ -383,6 +407,12 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         print("\n++++++++++++++++++++")
         print("entering \(region.identifier)")
         print("++++++++++++++++++++")
+        
+        if region.identifier == "Destination Location" {
+            let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you arrived at your destination.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alert, animated: true)
+        }
         
         // stop monitoring the last passed location
         self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
