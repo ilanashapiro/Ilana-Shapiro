@@ -107,15 +107,11 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         endMarker.title = "END"
         endMarker.map = googleMaps
         
-        // when user picks their path to start walking, send a text to emergency contact
-        // currently, this "naive text" is an alert to the walker
-        let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you started walking.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        self.present(alert, animated: true)
-        
-        // start monitoring the walker's destination location as a region
-        // should trigger alertWhenArrivedAtDestination function when user arrives
+        // start monitoring the walker's destination location as a region - triggers alert when user arrives
         monitorRegionAtDestination(center: selectedDestinationLocation, identifier: "Destination Location")
+        
+        // start monitoring the walker's start location as a region - triggers alert when user departs
+        monitorRegionAtDestination(center: selectedStartLocation, identifier: "Start Location")
     
         
         // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now.
@@ -408,14 +404,25 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         print("entering \(region.identifier)")
         print("++++++++++++++++++++")
         
+        // alert when user arrives at destination
         if region.identifier == "Destination Location" {
             let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you arrived at your destination.", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             self.present(alert, animated: true)
         }
         
+        // alerts when user leaves start location
+        if region.identifier == "Start Location" {
+            let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you started walking.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alert, animated: true)
+         }
+        
+        
         // stop monitoring the last passed location
-        self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
+        if !regionCenters.isEmpty {
+            self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
+        }
         
         // start monitoring the next one
         // TODO:
@@ -439,7 +446,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         let circularRegion = region as! CLCircularRegion
         print("\n-----------------------")
-        print("monitoring \(region.identifier)")
+        print("exiting \(region.identifier)")
         print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
         print("-----------------------")
     }
