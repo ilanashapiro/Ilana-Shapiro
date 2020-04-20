@@ -262,16 +262,44 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     // for getting user's current location updates
     func currentLocationUpdate(_ location: CLLocation) {
         
-        if cameraupdate == false{
+        if cameraupdate == false {
             cameraupdate = true
             let camera = GMSCameraPosition.camera(withLatitude: AppDelegate.SharedDelegate().currentLocation.coordinate.latitude,
                                                   longitude: AppDelegate.SharedDelegate().currentLocation.coordinate.longitude,
                                                   zoom: 16)
             googleMaps.camera = camera
         }
-
     }
     
+    // if user strays from path, call emergency contact
+    func leftPathCallContact(_ location: CLLocation) {
+        if lastTappedRoutePolyline.path != nil {
+            let currentLocation = CLLocationCoordinate2DMake(AppDelegate.SharedDelegate().currentLocation.coordinate.latitude, AppDelegate.SharedDelegate().currentLocation.coordinate.longitude)
+            
+            // a boolean variable - true if on path or within a tolerance of 5 meters
+            let onPath = GMSGeometryIsLocationOnPathTolerance(currentLocation, lastTappedRoutePolyline.path!, true, 5)
+            
+            print("-----------------------------------------------------------")
+            
+            // if user strays from path, call emergency contact -- not working
+            if !onPath {
+//                getEmergencyContactPhone()
+//
+//                if let url = URL(string: "tel://\(self.contactNumber)"),
+//                UIApplication.shared.canOpenURL(url) {
+//                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+//                }
+                let alert = UIAlertController(title: "Call Emergency Contact", message: "You've strayed more than 5 meters from your path!", preferredStyle: .alert)
+
+                alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+                
+                self.present(alert, animated: true)
+                
+            }
+        }
+    }
+    
+    // retrieves the user's emergency contact's phone number from firebase
     func getEmergencyContactPhone() {
         let emergencyContactRef = db.collection("users").document(Auth.auth().currentUser!.uid)
         emergencyContactRef.getDocument { (document, error) in
@@ -321,7 +349,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     }
     
     
-    /// Gets the user's real current location
+    // Gets the user's real current location
     func getCurrLocation() {
 
         // show user location if auth provided
