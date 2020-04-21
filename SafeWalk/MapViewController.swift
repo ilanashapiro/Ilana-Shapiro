@@ -144,7 +144,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         getDirectionsListFromRoute(route: chosenRoute)
         
         // start monitoring the walker's start location as a region - triggers alert when user departs
-        monitorRegionAtDestination(center: selectedStartLocation, identifier: "Start Location")
+        monitorRegionAtEndpoints(center: selectedStartLocation, identifier: "Start Location")
         
         // the first part of the tuple (i.e. element 0) is the string
         // description of the direction
@@ -153,7 +153,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // create a region for each endpoint in every google maps path step
         for checkpoint in directionsList {
             let region = CLCircularRegion(center: checkpoint.endLocation,
-                                          radius: 1.0,
+                                          radius: 5.0,
                                           identifier: checkpoint.description)
             
             // put each region in a queue of regions to be monitored
@@ -163,7 +163,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // add to regions but don't start monitoring
         regionCenters.append(
             CLCircularRegion(center: selectedDestinationLocation,
-                             radius: 1.0, identifier: "Destination Location"))
+                             radius: 5.0, identifier: "Destination Location"))
 //
 //        // start monitoring the walker's destination location as a region - triggers alert when user arrives
 //        monitorRegionAtDestination(center: selectedDestinationLocation, identifier: "Destination Location")
@@ -281,16 +281,23 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     // set up destination location as a region to monitor
     // https://developer.apple.com/documentation/corelocation/monitoring_the_user_s_proximity_to_geographic_regions
-    func monitorRegionAtDestination(center: CLLocationCoordinate2D, identifier: String) {
+    func monitorRegionAtEndpoints(center: CLLocationCoordinate2D, identifier: String) {
         // Make sure the devices supports region monitoring.
         if CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
             // Register the region.
             // when distance from destination is 1 meter TODO
-            let distFromDestination = 1.0
+            let distFromDestination = 5.0
             let region = CLCircularRegion(center: center,
                  radius: distFromDestination, identifier: identifier)
-//            region.notifyOnEntry = true
-//            region.notifyOnExit = false
+            
+            // don't notify entry if it's the start location
+            // otherwise don't notify exit if it's the end location
+            if identifier.first == "S" {
+                region.notifyOnEntry = false
+            }
+            else if identifier.first == "D" {
+                region.notifyOnExit = false
+            }
             locationManager.startMonitoring(for: region)
             regionCenters.append(region)
         }
@@ -403,7 +410,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         
         print (regionCenters.first?.contains(manager.location!.coordinate))
         
-
     }
     
     /// Handles sending texts and changing the displayed direction when a given
