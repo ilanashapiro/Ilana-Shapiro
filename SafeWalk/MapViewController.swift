@@ -57,12 +57,16 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     // list of endpoints for each google map gps direction instruction
     var regionCenters = [CLCircularRegion]()
+    var currRegionIndex = 0
     
     var contactName = ""
     var contactNumber = ""
     
     // for following user's current location
     var cameraupdate:Bool = false
+    
+    // reference to the directions list view controller
+    var directionsListVC : DirectionsListViewController!
     
 // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now. It replaces polylineList in function
 //    var markersPerRoute = [String:[Any]]()
@@ -106,12 +110,6 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         endMarker.icon = GMSMarker.markerImage(with: UIColor.green)
         endMarker.title = "END"
         endMarker.map = googleMaps
-        
-        // start monitoring the walker's destination location as a region - triggers alert when user arrives
-        monitorRegionAtDestination(center: selectedDestinationLocation, identifier: "Destination Location")
-        
-        // start monitoring the walker's start location as a region - triggers alert when user departs
-        monitorRegionAtDestination(center: selectedStartLocation, identifier: "Start Location")
     
         
         // code to save the markers in the tolerance of each path for filtering once the user chooses the path. However, this  doesn't appear to give much benefit to the user (i.e. it seems ok to keep all crimes on the UI), and it takes a long time, so commenting it out for now.
@@ -145,28 +143,34 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // put all directions onto a list (display all to user)
         getDirectionsListFromRoute(route: chosenRoute)
         
-        //THIS IS JUST A TES NORMALLY THE USER NEEDS TO SELECT A PATH BEFORE THIS GETS DISPLAYED
-        //THERE SHOULD BE AN INTERMEDIATE UI FOR THE PATH SELECTION STAGE
-        if (self.directionsList.count > 0) {
+        // start monitoring the walker's start location as a region - triggers alert when user departs
+        monitorRegionAtDestination(center: selectedStartLocation, identifier: "Start Location")
+    
+        
+        // the first part of the tuple (i.e. element 0) is the string
+        // description of the direction
+        nextDirectionTextView.text = self.directionsList.first?.description
+        
+        // create a region for each endpoint in every google maps path step
+        for checkpoint in directionsList {
             
-            //the first part of the tuple (i.e. element 0) is the string description of the direction
-            nextDirectionTextView.text = self.directionsList.first?.description
+            let region = CLCircularRegion(center: checkpoint.endLocation,
+                                          radius: 1.0,
+                                          identifier: checkpoint.description)
             
-            // create a region for each endpoint in every google maps path step
-            for checkpoint in directionsList {
-                let region = CLCircularRegion(center: checkpoint.endLocation,
-                                              radius: CLLocationDistance(2),
-                                              identifier: checkpoint.description)
-                regionCenters.append(region)
-                self.locationManager.startMonitoring(for: region)
-            }
-            
-            print("\n@@@@@@@@@@@@@@@@@@")
-            for region in regionCenters {
-                print(region.identifier)
-            }
-            print("@@@@@@@@@@@@@@@@@@")
+            // monitor region only if its available to be monitored
+            regionCenters.append(region)
+            self.locationManager.startMonitoring(for: region)
         }
+        
+        // start monitoring the walker's destination location as a region - triggers alert when user arrives
+        monitorRegionAtDestination(center: selectedDestinationLocation, identifier: "Destination Location")
+        
+        print("##########################")
+        for loc in regionCenters {
+            print(loc.description)
+        }
+        print("##########################")
     }
     
     @IBAction func didTapGetPath(_ sender: Any) {
@@ -278,14 +282,13 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     func monitorRegionAtDestination(center: CLLocationCoordinate2D, identifier: String) {
         // Make sure the devices supports region monitoring.
         if CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
-            print("REACHED MONITOR REGION AT DESTINATION")
             // Register the region.
             // when distance from destination is 5 meters
-            let distFromDestination = 5.0
+            let distFromDestination = 3.0
             let region = CLCircularRegion(center: center,
                  radius: distFromDestination, identifier: identifier)
-            region.notifyOnEntry = true
-            region.notifyOnExit = false
+//            region.notifyOnEntry = true
+//            region.notifyOnExit = false
             locationManager.startMonitoring(for: region)
         }
     }
@@ -359,8 +362,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // get the center between the destination and your location. If the
         // destination was not yet selected, then just use current location
         let endCoordinates = (locationEnd != nil) ?
-                        locationEnd.position :
-                        myLocationCoord
+                        locationEnd.position : myLocationCoord
         let center = getMidpoint(startCoordinates: myLocationCoord,
                                  endCoordinates: endCoordinates)
         
@@ -395,14 +397,21 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         self.googleMaps.settings.myLocationButton = true
         self.googleMaps.settings.compassButton = true
         self.googleMaps.settings.zoomGestures = true
+        
 
     }
     
+    /// Handles sending texts and changing the displayed direction when a given
+    /// step in a path is completed
+    /// - Parameters:
+    ///   - manager: the thing that keeps track of user location
+    ///   - region: the region the user entered
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
-        
-        print("\n++++++++++++++++++++")
+        let circularRegion = region as! CLCircularRegion
+        print("\n-----------------------")
         print("entering \(region.identifier)")
-        print("++++++++++++++++++++")
+        print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
+        print("-----------------------")
         
         // alert when user arrives at destination
         if region.identifier == "Destination Location" {
@@ -411,28 +420,19 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             self.present(alert, animated: true)
         }
         
-        // alerts when user leaves start location
-        if region.identifier == "Start Location" {
-            let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you started walking.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            self.present(alert, animated: true)
-         }
-        
-        
-        // stop monitoring the last passed location
-        if !regionCenters.isEmpty {
-            self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
-        }
+        // stop monitoring the area we just arrived at (note that we dont stop
+        // monitoring in didExitRegion since we want to just get the first item
+        // in a queue like fashion
+        self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
         
         // start monitoring the next one
         // TODO:
         // 1) should i monitor all at once
-        // 2) stop when this the last region has been walked to
-        nextDirectionTextView.text = regionCenters.first!.identifier
-        print("\n***************")
-        print(regionCenters.first!.identifier)
-        print("\(regionCenters.first!.center.latitude), \(regionCenters.first!.center.longitude)")
-        print("***************")
+        nextDirectionTextView.text = (!regionCenters.isEmpty) ?
+            region.identifier : "You have arrived at your destination."
+        
+        currRegionIndex += 1
+
     }
     
     func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
@@ -449,6 +449,19 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         print("exiting \(region.identifier)")
         print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
         print("-----------------------")
+        
+//        latitude = 33.783929999999998
+//        longitude = -118.07185
+        
+        // if we leave the start location then notify
+        // otherwise just stop monitoring the place we jsut left
+        if region.identifier == "Start Location" {
+            let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you started walking.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alert, animated: true)
+            self.locationManager.stopMonitoring(for: circularRegion)
+        }
+
     }
     
     func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
@@ -507,6 +520,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             lastTappedRoutePolyline.strokeWidth /= 2
             lastTappedRoutePolyline.path = nil
         }
+        
     }
     
     func didTapMyLocationButton(for mapView: GMSMapView) -> Bool {
@@ -529,7 +543,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         // change text color
         UISearchBar.appearance().setTextColor(color: UIColor.black)
         
-        self.locationManager.stopUpdatingLocation()
+//        self.locationManager.stopUpdatingLocation()
         self.present(autoCompleteController, animated: true, completion: nil)
     }
     
@@ -870,8 +884,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     override func prepare(for segue: UIStoryboardSegue, sender: Any?)
     {
         if (segue.identifier == "segueToDirectionsList") {
-            let directionsListVC = segue.destination as? DirectionsListViewController
-            directionsListVC?.directionsList = self.directionsList
+            self.directionsListVC = segue.destination as? DirectionsListViewController
+            self.directionsListVC?.directionsList = self.directionsList
+            self.directionsListVC!.currentDirectionIndex = self.currRegionIndex
             // have another  line once GPS is set up that sets directionsListVC?.currentDirectionIndex = self.currentDirectionIndex
             // or something like that to pass the current direction the user is on, to highlight the correct direction
         }

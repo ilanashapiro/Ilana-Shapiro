@@ -12,7 +12,7 @@ import GoogleMaps
 class DirectionsListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
     var directionsList =  [(description: String, endLocation: CLLocationCoordinate2D)]()
-    var currentDirectionIndex = 0
+    var currentDirectionIndex : Int!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,6 +37,8 @@ class DirectionsListViewController: UIViewController, UITableViewDelegate, UITab
        //section is always 0 in IndexPath (we don't have multiple sections)
         if (indexPath.row == currentDirectionIndex) {
             cell.backgroundColor = UIColor.init(red: 1.0, green: 1.0, blue: 0.0, alpha: 1)
+        } else {
+            cell.backgroundColor = UIColor.clear
         }
         
         return cell
