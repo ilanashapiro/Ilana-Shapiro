@@ -23,7 +23,6 @@
 		47FB8EBC2408F94000D34E54 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FB8EBB2408F94000D34E54 /* ProfileViewController.swift */; };
 		47FB8EBE240A644500D34E54 /* EmergencyContactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FB8EBD240A644500D34E54 /* EmergencyContactViewController.swift */; };
 		5CA6BBA7240204D700225256 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA6BBA6240204D700225256 /* MapViewController.swift */; };
-		5CD8EA0D2418115500961EBC /* DirectionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD8EA0C2418115500961EBC /* DirectionsViewController.swift */; };
 		AADAD4D29C80954082F6E857 /* Pods_SafeWalk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC10C9AFF2F33321CBF80540 /* Pods_SafeWalk.framework */; };
 /* End PBXBuildFile section */
 
@@ -48,7 +47,6 @@
 		47FB8EBB2408F94000D34E54 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		47FB8EBD240A644500D34E54 /* EmergencyContactViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencyContactViewController.swift; sourceTree = "<group>"; };
 		5CA6BBA6240204D700225256 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
-		5CD8EA0C2418115500961EBC /* DirectionsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionsViewController.swift; sourceTree = "<group>"; };
 		655B0A48535E619C44492A83 /* Pods-SafeWalk.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafeWalk.release.xcconfig"; path = "Target Support Files/Pods-SafeWalk/Pods-SafeWalk.release.xcconfig"; sourceTree = "<group>"; };
 		CC10C9AFF2F33321CBF80540 /* Pods_SafeWalk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SafeWalk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -105,7 +103,6 @@
 				47FB8EB1240677A500D34E54 /* LoginViewController.swift */,
 				5CA6BBA6240204D700225256 /* MapViewController.swift */,
 				47F55C77243C0FD000192F54 /* DirectionsListViewController.swift */,
-				5CD8EA0C2418115500961EBC /* DirectionsViewController.swift */,
 				47A2B33723FE6104009A4443 /* Main.storyboard */,
 				47F55C75243BEE5300192F54 /* DirectionsTableViewCell.swift */,
 				47918FB2241DA2DF00858E60 /* PasswordViewController.swift */,
@@ -279,7 +276,6 @@
 				47FB8EBA2408F3DF00D34E54 /* WelcomeViewController.swift in Sources */,
 				47FB8EBC2408F94000D34E54 /* ProfileViewController.swift in Sources */,
 				5CA6BBA7240204D700225256 /* MapViewController.swift in Sources */,
-				5CD8EA0D2418115500961EBC /* DirectionsViewController.swift in Sources */,
 				47FB8EB624067A9000D34E54 /* SignUpViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

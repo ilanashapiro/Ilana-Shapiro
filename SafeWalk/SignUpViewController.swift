@@ -79,6 +79,11 @@ class SignUpViewController: UIViewController {
                 // update Firebase
                 self.updateEmergencyContactData(data: emergencyContactData)
                 
+                // alert emergency contact when updated
+                let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you added them.", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true)
+                
             }
         }
     }
