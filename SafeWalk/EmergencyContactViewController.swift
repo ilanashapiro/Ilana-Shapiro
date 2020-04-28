@@ -46,10 +46,14 @@ class EmergencyContactViewController: UIViewController {
             "number": number,
         ]
         
-        
         // update Firebase and Profile VC
         updateEmergencyContactData(data: emergencyContactData)
         delegate?.updateEmergencyContact(self, contactName: contactName, number: number)
+        
+        // alert emergency contact when updated
+        let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you added them.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        self.present(alert, animated: true)
     }
     
     override func viewDidLoad() {
@@ -64,8 +68,14 @@ class EmergencyContactViewController: UIViewController {
                 let alert = UIAlertController(title: "Error updating emergency contact in database: \(err)", message: nil, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
                 self.present(alert, animated: true)
-            } else {
+            }
+            else {
                 print("Document successfully written!")
+                
+//                // alert emergency contact when updated
+//                let alert = UIAlertController(title: "Message sent!", message: "Your emergency contact was notified that you added them.", preferredStyle: .alert)
+//                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//                self.present(alert, animated: true)
             }
         }
     }

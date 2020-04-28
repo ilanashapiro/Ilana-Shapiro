@@ -51,7 +51,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <LocationScenarioReference
-         identifier = "../seal_beach.gpx"
+         identifier = "../berkeley_ca.gpx"
          referenceType = "0">
       </LocationScenarioReference>
    </LaunchAction>
