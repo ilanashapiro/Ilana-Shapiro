@@ -297,7 +297,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
     
     
     // if user strays from path, call emergency contact
-    func leftPathCallContact(_ location: CLLocation) {
+    func leftPathCallContact() {
         if lastTappedRoutePolyline.path != nil {
             let currentLocation = CLLocationCoordinate2DMake(AppDelegate.SharedDelegate().currentLocation.coordinate.latitude, AppDelegate.SharedDelegate().currentLocation.coordinate.longitude)
             
@@ -306,7 +306,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             
             print("-----------------------------------------------------------")
             
-            // if user strays from path, call emergency contact -- not working
+            // if user strays from path, call emergency contact "naive alert"
             if !onPath {
 //                getEmergencyContactPhone()
 //
@@ -315,9 +315,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
 //                UIApplication.shared.open(url, options: [:], completionHandler: nil)
 //                }
                 let alert = UIAlertController(title: "Call Emergency Contact", message: "You've strayed more than 5 meters from your path!", preferredStyle: .alert)
-
                 alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
-                
                 self.present(alert, animated: true)
                 
             }
@@ -427,6 +425,7 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             return
         }
         
+        
         // stop monitoring the area we just arrived at (note that we dont stop
         // monitoring in didExitRegion since we track by endpoint, not starting
         // point)
@@ -462,6 +461,8 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
             self.locationManager.stopMonitoring(for: regionCenters.removeFirst())
             self.locationManager.startMonitoring(for: regionCenters.first!)
         }
+        
+        leftPathCallContact()
 
     }
     
@@ -471,6 +472,9 @@ class MapViewController: UIViewController, GMSMapViewDelegate, CLLocationManager
         print("monitoring \(region.identifier)")
         print("\(circularRegion.center.latitude), \(circularRegion.center.longitude)")
         print("======================")
+        
+        leftPathCallContact()
+        
     }
     
     func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
