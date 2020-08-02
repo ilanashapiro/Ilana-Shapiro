@@ -1,5 +1,5 @@
 # SafeWalk for iOS - CS121
-
+An app that allows the user to enter a start and end location, and the safest routes are shown for you with crime markers along the way!
 To get this app running, simply open the project on XCode!
 
 [Here is some GitHub branching + pulling
